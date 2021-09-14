@@ -15,6 +15,7 @@ public class RG {
     private double minConf;
 
     private void createInitialItemsets() {
+        // itemsets will be an int of all of the items
         itemsets = new ArrayList<int[]>();
         for (int i = 0; i < numItems; i++) {
             int[] cand = {i};
@@ -23,16 +24,22 @@ public class RG {
     }
 
     private void calculateFrequentItemsets() {
+        // the frequent candidate itemsets is an arraylist
         List<int[]> frequentCandidates = new ArrayList<int[]>();
+        /*
+         * create an int array of the size of the itemsets
+         * create a boolean array of the size of the number of itemsets
+         */
         int count[] = new int[itemsets.size()];
         boolean[] records = new boolean[numItems];
 
+        // for each transaction
         for (int i = 0; i < numTransactions; i++) {
+            // for each candidate itemset
             for (int j = 0; j < itemsets.size(); j++) {
-                match = True;
-                // tokenize the candidate
+                boolean match = True;
                 int[] cand = itemsets.get(j);
-                // check each item in the itemset to see if it is present
+                // tokenize the candidate
                 for (int c : cand) {
                     if (trans[c] == false) {
                         match = false;
@@ -51,6 +58,7 @@ public class RG {
                 frequentCandidates.add[itemsets.get(i)]
             }
         }
+        // monotonicity
         itemsets = frequentCandidates;
     }
 

@@ -16,7 +16,7 @@ public class RG {
 
     private void createInitialItemsets() {
         // itemsets will be an int of all of the items
-        itemsets = new ArrayList<int[]>();
+        itemsets = new ArrayList<>();
         for (int i = 0; i < numItems; i++) {
             int[] cand = {i};
             itemsets.add(cand);
@@ -25,12 +25,12 @@ public class RG {
 
     private void calculateFrequentItemsets() {
         // the frequent candidate itemsets is an arraylist
-        List<int[]> frequentCandidates = new ArrayList<int[]>();
+        List<int[]> frequentCandidates = new ArrayList<>();
         /*
          * create an int array of the size of the itemsets
          * create a boolean array of the size of the number of itemsets
          */
-        int count[] = new int[itemsets.size()];
+        int[] count = new int[itemsets.size()];
         boolean[] records = new boolean[numItems];
 
         // for each transaction
@@ -41,7 +41,7 @@ public class RG {
                 int[] cand = itemsets.get(j);
                 // tokenize the candidate
                 for (int c : cand) {
-                    if (trans[c] == false) {
+                    if (!records[c]) {
                         match = false;
                         break;
                     }
@@ -55,7 +55,7 @@ public class RG {
         for (int i = 0; i < itemsets.size(); i++) {
             // add to the frequent candidates
             if ((count[i] / (double) (numTransactions)) >= minSup) {
-                frequentCandidates.add[itemsets.get(i)]
+                frequentCandidates.add(itemsets.get(i));
             }
         }
         // monotonicity

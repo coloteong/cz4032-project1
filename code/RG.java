@@ -37,7 +37,7 @@ public class RG {
         for (int i = 0; i < numTransactions; i++) {
             // for each candidate itemset
             for (int j = 0; j < itemsets.size(); j++) {
-                boolean match = True;
+                boolean match = true;
                 int[] cand = itemsets.get(j);
                 // tokenize the candidate
                 for (int c : cand) {

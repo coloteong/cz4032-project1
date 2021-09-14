@@ -14,8 +14,9 @@ public class RG {
     private double minSup;
     private double minConf;
 
-    private void createInitialItemsets() {
-        // itemsets will be an int of all of the items
+    public void createInitialItemsets() {
+        // itemsets will be an int of all the items
+
         itemsets = new ArrayList<>();
         for (int i = 0; i < numItems; i++) {
             int[] cand = {i};

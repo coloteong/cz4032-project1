@@ -4,15 +4,15 @@ import java.util.*;
 public class RG {
 
     // list of the current itemsets
-    private List<int[]> itemsets;
+    public List<int[]> itemsets;
     // the file where the itemsets are located in
-    private String sourceFile;
+    public String sourceFile;
     // the number of itemsets
-    private int numItems;
+    public int numItems;
     // the number of transactions in the source file
-    private int numTransactions;
-    private double minSup;
-    private double minConf;
+    public int numTransactions;
+    public double minSup;
+    public double minConf;
 
     public void createInitialItemsets() {
         // itemsets will be an int of all the items

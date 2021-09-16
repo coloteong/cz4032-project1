@@ -1,8 +1,8 @@
-import de.viadee.discretizers4j.*;
 import de.viadee.discretizers4j.impl.EqualSizeDiscretizer;
-
+import org.apache.commons.lang3.*;
 import java.io.*;
 import java.util.*;
+import java.util.stream.IntStream;
 
 public class RG {
 
@@ -19,6 +19,8 @@ public class RG {
     private String dataDir;
     private double minConf;
     private ArrayList<Integer> dataArray;
+
+    private static final int NUMCLASSES = 3;
 
 
     public void start() {
@@ -83,18 +85,18 @@ public class RG {
 
         // convert the values of the data and put it in a 2d array
         Integer[][] intValues = new Integer[numColumns][numTransactions];
-        for (int i = 1; i < numColumns; i++) {
+        for (int i = 0; i < numColumns; i++) {
             for (int j = 0; j < numTransactions; j++) {
-                intValues[i][j] = (intData.get((j * numColumns) + i));
-            }
+                intValues[i][j] = (intData.get((j * numColumns) + i)); }
         }
 
+        int maxColVal = (int) Collections.max(Arrays.asList(intValues[0]));
         for (int i = 1; i < numColumns; i++) {
-            // bs code just to get the max value in each column
-            int maxColVal = (int) Collections.max(Arrays.asList(intValues[i]));
+            int maxBin = (int) Collections.max(Arrays.asList(intValues[i]));
             for (int j = 0; j < numTransactions; j++) {
-                intData.set((j * numColumns) + i, (int) (copiedValues[i][j] + maxColVal * i));
+                intData.set((j * numColumns) + i, (int) (intValues[i][j] + maxColVal));
             }
+            maxColVal += maxBin;
         }
 
         System.out.println("What is the min support");
@@ -106,6 +108,8 @@ public class RG {
     }
 
     public void generateAssocRules() throws IOException {
+        System.out.println(dataArray.size());
+        System.out.println(numColumns * numTransactions);
         createInitialItemsets();
         int itemsetNumber = 1;
         int nbFrequentSets = 0;
@@ -130,22 +134,13 @@ public class RG {
 
         itemsets = new ArrayList<>();
         for (int i = 0; i < numItems; i++) {
-            int[] cand = {i};
+            int[] cand = {i + 1};
             itemsets.add(cand);
         }
     }
 
-    private void readLineToBoolean(String transaction, boolean[] trans) {
-        Arrays.fill(trans, false);
-        // convert a transaction line into a tokenizer
-        StringTokenizer transFile = new StringTokenizer(transaction, "");
-        System.out.println(transFile.nextToken());
-        while (transFile.hasMoreTokens()) {
-            int tokenizedVal = Integer.parseInt(transFile.nextToken());
-            trans[tokenizedVal] = true;
-        }
-    }
 
+    //FIXME: the frequent itemsets are not generated correctly
     private void calculateFrequentItemsets() throws IOException {
 
         System.out.println("Calculating frequent itemsets to compute the frequency of " + itemsets.size() + " itemsets");
@@ -157,35 +152,30 @@ public class RG {
          */
         boolean match;
         int[] count = new int[itemsets.size()];
-        boolean[] trans = new boolean[numItems];
-        BufferedReader dataIn = new BufferedReader(new InputStreamReader(new FileInputStream(dataDir)));
-        // get rid of headers
-        dataIn.readLine();
 
         // for each transaction
+        //FIXME: IndexOutOfBoundsException
         for (int i = 0; i < numTransactions; i++) {
-            String transaction = dataIn.readLine();
-            readLineToBoolean(transaction, trans);
             // for each candidate itemset
-            for (int j = 0; j < itemsets.size(); j++) {
+            int[] transaction = new int[numColumns];
+            for (int j = 0; j < numColumns; j++) {
+                transaction[j] = dataArray.get((i * numTransactions) + j);
+            }
+            System.out.println(Arrays.toString(transaction));
+            for (int k = 0; k < itemsets.size(); k++) {
                 match = true;
-                int[] cand = itemsets.get(j);
-                // tokenize the candidate
-                for (int c : cand) {
-                    if (!trans[c]) {
+                int[] cand = itemsets.get(k);
+                for (int c: cand) {
+                    if (!ArrayUtils.contains(transaction, c)) {
                         match = false;
                         break;
                     }
                 }
                 if (match) {
-                    count[j]++;
+                    count[k]++;
                 }
             }
         }
-
-        dataIn.close();
-        System.out.println(count[0]);
-
         for (int i = 0; i < itemsets.size(); i++) {
             // add to the frequent candidates
             if ((count[i] / (double) (numTransactions)) >= minSup) {

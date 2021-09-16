@@ -6,14 +6,13 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        ArrayList<String> data = new ArrayList<String>();
-        RG rg = new RG();
+        /*ArrayList<String> data = new ArrayList<String>();
         Scanner sc = new Scanner(System.in);
         int numColumns = 0;
         boolean fileFound = false;
-        /*
+        *//*
         continually loop until a valid data file is read
-         */
+         *//*
         while (!fileFound) {
             try {
                 System.out.println("Type in directory to dataset (.data): ");
@@ -23,7 +22,7 @@ public class Main {
                 while (dataScanner.hasNextLine()) {
                     String tempData = dataScanner.nextLine();
                     String[] tokens = tempData.split(",");
-                    numColumns = tokens.length;
+                    rg.setNumColumns(tokens.length);
                     data.addAll(List.of(tokens));
                 }
                 dataScanner.close();
@@ -31,12 +30,11 @@ public class Main {
             } catch (Exception e) {
                 System.out.println("File cannot be found");
             }
-        }
-        // TODO: discretize the continuous values into bins
-        rg.numTransactions = (data.size() / numColumns);
-        rg.numItems = (int) data.stream().distinct().count();
-        rg.createInitialItemsets();
-        System.out.println(rg.numItems);
+        }*/
+        RG rg = new RG();
+        rg.start();
+        // rg.configGenerator(data);
+        rg.generateAssocRules();
     }
 
 }

@@ -1,3 +1,6 @@
+import de.viadee.discretizers4j.*;
+import de.viadee.discretizers4j.impl.EqualSizeDiscretizer;
+
 import java.io.*;
 import java.util.*;
 
@@ -15,7 +18,7 @@ public class RG {
     // path to the data file
     private String dataDir;
     private double minConf;
-    private float[][] dataArray;
+    private ArrayList<Integer> dataArray;
 
 
     public void start() {
@@ -46,32 +49,59 @@ public class RG {
                 System.out.println("File cannot be found");
             }
         }
-/*
-        dataArray = new float[numTransactions][numColumns];
-        for (int i = 0; i < numTransactions; i++) {
-            for (int j = 0; j < numColumns; j++) {
-                dataArray[i][j] = Float.parseFloat(data.get((j * numTransactions) + i));
+// discretize the values in each column
+        // need to have copiedValues since discretizer.fit sorts the array
+        Double[][] values = new Double[numColumns][numTransactions];
+        Double[][] copiedValues = new Double[numColumns][numTransactions];
+        //TODO: currently i starts from 1 because the target is the 0th column
+        // this needs to be changed when we change the data
+        for (int i = 1; i < numColumns; i++) {
+            for (int j = 0; j < numTransactions; j++) {
+                values[i][j] = Double.parseDouble(data.get((j * numColumns) + i));
+                copiedValues[i][j] = values[i][j];
+            }
+            // System.out.println(Arrays.toString(values[i]));
+            EqualSizeDiscretizer discretizer = new EqualSizeDiscretizer();
+            discretizer.fit(values[i]);
+            // System.out.println(discretizer.getTransitions());
+            copiedValues[i] = discretizer.apply(copiedValues[i]);
+            // System.out.println(Arrays.toString(copiedValues[i]));
+        }
+
+        // convert the data to be the bin so that they are all ranging from 0 to the max in each column
+        for (int i = 1; i < numColumns; i++) {
+            for (int j = 0; j < numTransactions; j++) {
+                data.set((j * numColumns) + i, String.valueOf(copiedValues[i][j]));
             }
         }
-*/
 
-        // TODO: discretize the values in each column
-
-        // get unique values
-        Set<String> uniqueValues = new HashSet<String>(data);
-        // convert values to hashmap
-        Map<Integer, Integer> valueMap = new HashMap<>();
-        int i = 0;
-        for (String value:
-             uniqueValues) {
-            valueMap.put(i, Integer.parseInt(value));
-            i++;
+        // make an Integer ArrayList
+        ArrayList<Integer> intData = new ArrayList<Integer>();
+        for (int i = 0; i < data.size(); i++) {
+            intData.add((int) (Float.parseFloat(data.get(i))));
         }
 
+        // convert the values of the data and put it in a 2d array
+        Integer[][] intValues = new Integer[numColumns][numTransactions];
+        for (int i = 1; i < numColumns; i++) {
+            for (int j = 0; j < numTransactions; j++) {
+                intValues[i][j] = (intData.get((j * numColumns) + i));
+            }
+        }
+
+        for (int i = 1; i < numColumns; i++) {
+            // bs code just to get the max value in each column
+            int maxColVal = (int) Collections.max(Arrays.asList(intValues[i]));
+            for (int j = 0; j < numTransactions; j++) {
+                intData.set((j * numColumns) + i, (int) (copiedValues[i][j] + maxColVal * i));
+            }
+        }
 
         System.out.println("What is the min support");
         minSup = sc.nextFloat();
-        numItems = (int) data.stream().distinct().count();
+        numItems = (int) intData.stream().distinct().count();
+        dataArray = intData;
+
         sc.close();
     }
 
@@ -80,8 +110,6 @@ public class RG {
         int itemsetNumber = 1;
         int nbFrequentSets = 0;
         System.out.println("Itemset size: " + itemsetNumber);
-        System.out.println(Arrays.toString(itemsets.get(0)));
-
         while (itemsets.size() > 0) {
             System.out.println("Itemsets.size: " + itemsets.size());
             calculateFrequentItemsets();

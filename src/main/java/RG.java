@@ -24,7 +24,7 @@ public class RG {
 
 
     public void start() {
-        ArrayList<String> data = new ArrayList<String>();
+        ArrayList<String> data = new ArrayList<>();
         Scanner sc = new Scanner(System.in);
         boolean fileFound = false;
         /*
@@ -78,9 +78,9 @@ public class RG {
         }
 
         // make an Integer ArrayList
-        ArrayList<Integer> intData = new ArrayList<Integer>();
-        for (int i = 0; i < data.size(); i++) {
-            intData.add((int) (Float.parseFloat(data.get(i))));
+        ArrayList<Integer> intData = new ArrayList<>();
+        for (String datum : data) {
+            intData.add((int) (Float.parseFloat(datum)));
         }
 
         // convert the values of the data and put it in a 2d array
@@ -90,11 +90,11 @@ public class RG {
                 intValues[i][j] = (intData.get((j * numColumns) + i)); }
         }
 
-        int maxColVal = (int) Collections.max(Arrays.asList(intValues[0]));
+        int maxColVal = Collections.max(Arrays.asList(intValues[0]));
         for (int i = 1; i < numColumns; i++) {
-            int maxBin = (int) Collections.max(Arrays.asList(intValues[i]));
+            int maxBin = Collections.max(Arrays.asList(intValues[i]));
             for (int j = 0; j < numTransactions; j++) {
-                intData.set((j * numColumns) + i, (int) (intValues[i][j] + maxColVal));
+                intData.set((j * numColumns) + i, intValues[i][j] + maxColVal);
             }
             maxColVal += maxBin;
         }
@@ -107,7 +107,7 @@ public class RG {
         sc.close();
     }
 
-    public void generateAssocRules() throws IOException {
+    public void generateAssocRules() {
         System.out.println(dataArray.size());
         System.out.println(numColumns * numTransactions);
         createInitialItemsets();
@@ -141,25 +141,24 @@ public class RG {
 
 
     //FIXME: the frequent itemsets are not generated correctly
-    private void calculateFrequentItemsets() throws IOException {
+    private void calculateFrequentItemsets() {
 
         System.out.println("Calculating frequent itemsets to compute the frequency of " + itemsets.size() + " itemsets");
         List<int[]> frequentCandidates = new ArrayList<>();
 
-        /**
-         * match: whether the transaction has al the items in an itemset
-         * count: number of successful matches
+        /*
+          match: whether the transaction has al the items in an itemset
+          count: number of successful matches
          */
         boolean match;
         int[] count = new int[itemsets.size()];
 
         // for each transaction
-        //FIXME: IndexOutOfBoundsException
         for (int i = 0; i < numTransactions; i++) {
             // for each candidate itemset
             int[] transaction = new int[numColumns];
             for (int j = 0; j < numColumns; j++) {
-                transaction[j] = dataArray.get((i * numTransactions) + j);
+                transaction[j] = dataArray.get((i * numColumns) + j);
             }
             System.out.println(Arrays.toString(transaction));
             for (int k = 0; k < itemsets.size(); k++) {

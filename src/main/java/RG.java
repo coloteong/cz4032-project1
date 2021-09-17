@@ -14,7 +14,7 @@ public class RG {
     private int numColumns;
     // the number of transactions in the source file
     private int numTransactions;
-    private double minSup;
+    private double minSup = 0.01;
     // path to the data file
     private String dataDir;
     private double minConf;
@@ -99,34 +99,73 @@ public class RG {
             maxColVal += maxBin;
         }
 
-        System.out.println("What is the min support");
-        minSup = sc.nextFloat();
         numItems = (int) intData.stream().distinct().count();
         dataArray = intData;
-
         sc.close();
     }
 
     public void generateAssocRules() {
-        System.out.println(dataArray.size());
-        System.out.println(numColumns * numTransactions);
         createInitialItemsets();
         int itemsetNumber = 1;
         int nbFrequentSets = 0;
-        System.out.println("Itemset size: " + itemsetNumber);
         while (itemsets.size() > 0) {
             System.out.println("Itemsets.size: " + itemsets.size());
             calculateFrequentItemsets();
             if (itemsets.size() != 0) {
                 nbFrequentSets += itemsets.size();
                 System.out.println("found " + itemsets.size() + " frequent itemsets of size " + itemsetNumber);
-                createNewItemsetsfromPrevious();
+                createNewItemsetsFromPrevious();
             }
             itemsetNumber++;
         }
     }
 
-    private void createNewItemsetsfromPrevious() {
+    private void createNewItemsetsFromPrevious() {
+        // get the number of items in the current candidate itemset
+        int currentItemsetSize = itemsets.get(0).length;
+        System.out.println("generating frequent candidate frequent itemsets of size " + (currentItemsetSize + 1) );
+
+        HashMap<String, int[]> freqCandidates = new HashMap<>();
+
+        for (int i = 0; i < itemsets.size(); i++) {
+            for (int[] itemset : itemsets) {
+                int[] X = itemsets.get(i);
+
+                // using array X as the base, we make the first n - 1 elements of the next itemset
+                // the elements of X
+                int[] newCand = new int[currentItemsetSize + 1];
+                for (int j = 0; j < newCand.length - 1; j++) {
+                    newCand[j] = X[j];
+                }
+
+                // we would then want to check for elements in the frequent n - 1 itemsets that are also frequent
+                // but which has an element not in x
+                int nDifferent = 0;
+                for (int j : itemset) {
+                    boolean found = false;
+
+                    for (int x : X) {
+                        if (x == j) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    // if there is such an element
+                    // we add this to the last position of the new candidate itemset
+                    if (!found) {
+                        nDifferent++;
+                        newCand[newCand.length - 1] = j;
+                    }
+                }
+                // add this new frequent itemeset of length n
+                // and put it into the freqCandidates list
+                if (nDifferent == 1) {
+                    Arrays.sort(newCand);
+                    freqCandidates.put(Arrays.toString(newCand), newCand);
+                }
+            }
+        }
+        itemsets = new ArrayList<>(freqCandidates.values());
     }
 
     public void createInitialItemsets() {
@@ -140,7 +179,6 @@ public class RG {
     }
 
 
-    //FIXME: the frequent itemsets are not generated correctly
     private void calculateFrequentItemsets() {
 
         System.out.println("Calculating frequent itemsets to compute the frequency of " + itemsets.size() + " itemsets");
@@ -160,7 +198,7 @@ public class RG {
             for (int j = 0; j < numColumns; j++) {
                 transaction[j] = dataArray.get((i * numColumns) + j);
             }
-            System.out.println(Arrays.toString(transaction));
+            // System.out.println(Arrays.toString(transaction));
             for (int k = 0; k < itemsets.size(); k++) {
                 match = true;
                 int[] cand = itemsets.get(k);

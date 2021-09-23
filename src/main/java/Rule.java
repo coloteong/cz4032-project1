@@ -18,7 +18,7 @@ public class Rule {
     }
 
     private double countSupport(int[] items) {
-        //TODO: #4 Implement count support
+        //TODO:Implement #4 count support
     }
 
     private double countConfidence(int[] antecedent, int[] consequent) {

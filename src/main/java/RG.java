@@ -17,8 +17,11 @@ public class RG {
     private double minSup = 0.01;
     // path to the data file
     private String dataDir;
+    // min confidence for all the itemsets
     private double minConf;
     private ArrayList<Integer> dataArray;
+    // stores all the rules
+    private ArrayList<Rule> ruleArray;
 
     private static final int NUMCLASSES = 3;
 
@@ -62,14 +65,11 @@ public class RG {
                 values[i][j] = Double.parseDouble(data.get((j * numColumns) + i));
                 copiedValues[i][j] = values[i][j];
             }
-            // System.out.println(Arrays.toString(values[i]));
             //TODO: #3 the current discretizer is the EqualSizeDiscretizer, can look for other libraries or other 
             // discretizers to implement a better algorithm
             EqualSizeDiscretizer discretizer = new EqualSizeDiscretizer();
             discretizer.fit(values[i]);
-            // System.out.println(discretizer.getTransitions());
             copiedValues[i] = discretizer.apply(copiedValues[i]);
-            // System.out.println(Arrays.toString(copiedValues[i]));
         }
 
         // convert the data to be the bin so that they are all ranging from 0 to the max in each column
@@ -109,12 +109,12 @@ public class RG {
     public void generateFrequentItemsets() {
         createInitialItemsets();
         int itemsetNumber = 1;
-        int nbFrequentSets = 0;
-        while (itemsets.size() > 0) {
+        //while (itemsets.size() > 0) {
+        while (!itemsets.isEmpty()) {
             System.out.println("Itemsets.size: " + itemsets.size());
             calculateFrequentItemsets();
-            if (itemsets.size() != 0) {
-                nbFrequentSets += itemsets.size();
+            if (!itemsets.isEmpty()) {
+            // if (itemsets.size() != 0) {
                 System.out.println("found " + itemsets.size() + " frequent itemsets of size " + itemsetNumber);
                 createNewItemsetsFromPrevious();
             }
@@ -122,8 +122,27 @@ public class RG {
         }
     }
 
-    public void generateAssocRulesFromItemsets{
+    public void generateAssocRulesFromItemsets() {
         //TODO #1 
+        // this shouldn't be too complicated
+        // we only care for those rules where the RHS is in 
+        // the 
+        int currentItemsetSize = itemsets.get(0).length;
+        // for each itemset, we get a rule
+        // let's use variant 2 of mining association rules from the lecture notes
+        for (int[] itemset : itemsets) {
+            int[] rightHandSide = {itemset[0]};
+            // everything else is in the antecedent
+            var leftHandSide = Arrays.copyOfRange(itemset, 1, itemset.length);
+            Rule newRule = new Rule(leftHandSide, rightHandSide);
+            // for this rule, we check if it is above the min confidence
+            if (newRule.getConfidence() > minConf) {
+                ruleArray.add(newRule);
+                //TODO: actually, do we need to generate rules where
+                // there are more than one elements on the RHS?
+            }
+        }
+
     }
 
     private void createNewItemsetsFromPrevious() {
@@ -135,14 +154,11 @@ public class RG {
 
         for (int i = 0; i < itemsets.size(); i++) {
             for (int[] itemset : itemsets) {
-                int[] X = itemsets.get(i);
+                var X = itemsets.get(i);
 
                 // using array X as the base, we make the first n - 1 elements of the next itemset
                 // the elements of X
-                int[] newCand = new int[currentItemsetSize + 1];
-                for (int j = 0; j < newCand.length - 1; j++) {
-                    newCand[j] = X[j];
-                }
+                int[] newCand = Arrays.copyOf(X, X.length);
 
                 // we would then want to check for elements in the frequent n - 1 itemsets that are also frequent
                 // but which has an element not in x
@@ -204,7 +220,6 @@ public class RG {
             for (int j = 0; j < numColumns; j++) {
                 transaction[j] = dataArray.get((i * numColumns) + j);
             }
-            // System.out.println(Arrays.toString(transaction));
             for (int k = 0; k < itemsets.size(); k++) {
                 match = true;
                 int[] cand = itemsets.get(k);

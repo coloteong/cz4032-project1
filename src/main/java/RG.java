@@ -104,7 +104,7 @@ public class RG {
         sc.close();
     }
 
-    public void generateAssocRules() {
+    public void generateFrequentItemsets() {
         createInitialItemsets();
         int itemsetNumber = 1;
         int nbFrequentSets = 0;
@@ -118,6 +118,10 @@ public class RG {
             }
             itemsetNumber++;
         }
+    }
+
+    public void generateAssocRulesFromItemsets{
+        //TODO #1 
     }
 
     private void createNewItemsetsFromPrevious() {

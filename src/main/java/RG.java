@@ -63,6 +63,8 @@ public class RG {
                 copiedValues[i][j] = values[i][j];
             }
             // System.out.println(Arrays.toString(values[i]));
+            //TODO: #3 the current discretizer is the EqualSizeDiscretizer, can look for other libraries or other 
+            // discretizers to implement a better algorithm
             EqualSizeDiscretizer discretizer = new EqualSizeDiscretizer();
             discretizer.fit(values[i]);
             // System.out.println(discretizer.getTransitions());

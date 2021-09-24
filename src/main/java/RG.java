@@ -21,7 +21,7 @@ public class RG {
     private double minConf;
     public ArrayList<Integer> dataArray;
     // stores all the rules
-    private ArrayList<Rule> ruleArray;
+    public ArrayList<Rule> ruleArray;
 
     private static final int NUMCLASSES = 3;
 
@@ -250,5 +250,9 @@ public class RG {
             }
         }
         return ((count / (double) (numTransactions)));
+    }
+
+    public ArrayList<Rule> getRuleArray() {
+        return ruleArray;
     }
 }

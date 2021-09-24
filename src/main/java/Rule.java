@@ -19,6 +19,10 @@ public class Rule {
         return confidence;
     }
 
+    //public double getSupport() {
+    //    return 
+    //}
+
     private double countSupport(int[] items) {
         // implemented in RG, just import this over? 
         // or maybe can just calculate support
@@ -33,5 +37,6 @@ public class Rule {
 
         return allSupport/lhsSupport;
     }
+
 }
 

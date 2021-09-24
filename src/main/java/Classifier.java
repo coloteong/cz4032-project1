@@ -21,8 +21,10 @@ public class Classifier{
     }
 
     private void sortRules() {
-        for (int i = 0; i < RG.getRuleArray().length; i++){
-            
+        for (int i = 0; i < RG.getRuleArray().length - 1; i++){
+            new Rule betterRule = comparePrecedence(ruleArray., r2)
+
+
         }
 
     }

@@ -138,8 +138,6 @@ public class RG {
             // for this rule, we check if it is above the min confidence
             if (newRule.getConfidence() > minConf) {
                 ruleArray.add(newRule);
-                //TODO: actually, do we need to generate rules where
-                // there are more than one elements on the RHS?
             }
         }
 

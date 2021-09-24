@@ -6,6 +6,7 @@ public class Rule {
     private int[] antecedent;
     private int[] consequent;
     private double confidence;
+    private double support;
 
     public Rule(int[] antecedent, int[] consequent) {
         this.antecedent = antecedent;

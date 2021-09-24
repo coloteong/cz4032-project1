@@ -19,7 +19,7 @@ public class RG {
     private String dataDir;
     // min confidence for all the itemsets
     private double minConf;
-    private ArrayList<Integer> dataArray;
+    public ArrayList<Integer> dataArray;
     // stores all the rules
     private ArrayList<Rule> ruleArray;
 
@@ -206,37 +206,20 @@ public class RG {
         System.out.println("Calculating frequent itemsets to compute the frequency of " + itemsets.size() + " itemsets");
         List<int[]> frequentCandidates = new ArrayList<>();
 
-        /*
-          match: whether the transaction has al the items in an itemset
-          count: number of successful matches
-         */
-        boolean match;
-        int[] count = new int[itemsets.size()];
-
-        // for each transaction
+        // convert data to 2d array 
+        // TODO: bring 2d array to global namespace after discretizing
+        int[][] transactions = new int[numTransactions][numColumns];
         for (int i = 0; i < numTransactions; i++) {
-            // for each candidate itemset
-            int[] transaction = new int[numColumns];
             for (int j = 0; j < numColumns; j++) {
-                transaction[j] = dataArray.get((i * numColumns) + j);
-            }
-            for (int k = 0; k < itemsets.size(); k++) {
-                match = true;
-                int[] cand = itemsets.get(k);
-                for (int c: cand) {
-                    if (!ArrayUtils.contains(transaction, c)) {
-                        match = false;
-                        break;
-                    }
-                }
-                if (match) {
-                    count[k]++;
-                }
+                transactions[i][j] = dataArray.get((i * numColumns) + j);
             }
         }
+        
+        // count support for each itemset 
         for (int i = 0; i < itemsets.size(); i++) {
             // add to the frequent candidates
-            if ((count[i] / (double) (numTransactions)) >= minSup) {
+            double support = countSupport(itemsets.get(i), transactions);
+            if (support >= minSup) {
                 frequentCandidates.add(itemsets.get(i));
             }
         }
@@ -244,4 +227,28 @@ public class RG {
         itemsets = frequentCandidates;
     }
 
+    private double countSupport(int[] items, int[][] transactions) {
+        /*
+          match: whether the transaction has al the items in an itemset
+          count: number of successful matches
+         */
+        boolean match;
+        int count = 0;
+
+        // check items against each transaction
+        for (int i = 0; i < numTransactions; i++) {
+            match = true;
+            // set match to false if there is an item from items is missing in transaction
+            for (int c: items) {
+                if (!ArrayUtils.contains(transactions[i], c)) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                count++;
+            }
+        }
+        return ((count / (double) (numTransactions)));
+    }
 }

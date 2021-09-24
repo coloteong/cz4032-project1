@@ -10,6 +10,8 @@ public class Rule {
     public Rule(int[] antecedent, int[] consequent) {
         this.antecedent = antecedent;
         this.consequent = consequent;
+
+        // should we make a setConfidence and setSupport method, and invoke in RG?
         confidence = countConfidence(antecedent, consequent);
     }
 
@@ -18,10 +20,11 @@ public class Rule {
     }
 
     private double countSupport(int[] items) {
-        //TODO:Implement #4 count support
+        // implemented in RG, just import this over? 
+        // or maybe can just calculate support
     }
 
-    private double countConfidence(int[] antecedent, int[] consequent) {
+    private double countConfidence(int[] antecedent, int[] consequent) { 
         List<int[]> arrList = Arrays.asList(antecedent);
         arrList.add(consequent);
         var allElements = arrList.toArray();

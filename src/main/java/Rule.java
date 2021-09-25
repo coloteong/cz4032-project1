@@ -3,11 +3,11 @@ import java.util.List;
 
 public class Rule {
     private int[] antecedent;
-    private int[] consequent;
+    private int consequent;
     private double confidence;
     private double support;
 
-    public Rule(int[] antecedent, int[] consequent) {
+    public Rule(int[] antecedent, int consequent) {
         this.antecedent = antecedent;
         this.consequent = consequent;
 
@@ -23,16 +23,18 @@ public class Rule {
         return support;
     }
 
-    private double countConfidence(int[] antecedent, int[] consequent) { 
-        List<int[]> arrList = Arrays.asList(antecedent);
-        arrList.add(consequent);
-        // change the object array to an int array
-        var allElements = arrList.toArray();
-        int length = allElements.length;
-        int[] intArray = new int[length];
-        System.arraycopy(allElements, 0, intArray, 0, length);
+    public int[] getAntecedent() {
+        return antecedent;
+    }
 
-        support = RG.countSupport(intArray);
+    public int getConsequent() {
+        return consequent;
+    }
+
+    private double countConfidence(int[] antecedent, int consequent) { 
+        var allElements = Arrays.copyOf(antecedent, antecedent.length + 1);
+        allElements[allElements.length - 1] = consequent;
+        support = RG.countSupport(allElements);
         double lhsSupport = RG.countSupport(antecedent);
 
         return support/lhsSupport;

@@ -12,17 +12,17 @@ public class RG {
     // the number of columns in the data
     private int numColumns;
     // the number of transactions in the source file
-    private int numTransactions;
+    private static int numTransactions;
     private double minSup = 0.01;
     // path to the data file
     private String dataDir;
     // min confidence for all the itemsets
     private double minConf;
     // the  2D array i.e. dataArray
-    private Transaction[] transactionList;
-    public List<Integer> dataArray;
+    private static Transaction[] transactionList;
+    public ArrayList<Integer> dataArray;
     // stores all the rules
-    public List<Rule> ruleArray;
+    public ArrayList<Rule> ruleArray;
 
     // We might need this for... im not sure
     // private final int NUMCLASSES = 3;
@@ -131,7 +131,7 @@ public class RG {
         // for each itemset, we get a rule
         // let's use variant 2 of mining association rules from the lecture notes
         for (int[] itemset : itemsets) {
-            int[] rightHandSide = {itemset[0]};
+            int rightHandSide = itemset[0];
             // everything else is in the antecedent
             var leftHandSide = Arrays.copyOfRange(itemset, 1, itemset.length);
             Rule newRule = new Rule(leftHandSide, rightHandSide);
@@ -199,17 +199,6 @@ public class RG {
         }
     }
 
-/*     private void convertToTwoDArray() {
-
-        // convert data to 2d array 
-        transactions = new int[numTransactions][numColumns];
-        for (int i = 0; i < numTransactions; i++) {
-            for (int j = 0; j < numColumns; j++) {
-                transactions[i][j] = dataArray.get((i * numColumns) + j);
-            }
-        }
-    } */
-
     private void convertToTransactionList() {
 
         transactionList = new Transaction[numTransactions];
@@ -271,7 +260,7 @@ public class RG {
         return count / (double) (numTransactions);
     }
 
-    public double countSupport(int[] items) {
+    public static double countSupport(int[] items) {
         /*
           match: whether the transaction has al the items in an itemset
           count: number of successful matches
@@ -296,8 +285,56 @@ public class RG {
         return count / (double) (numTransactions);
     }
 
+    private void pruneRules() {
+        ArrayList<Rule> currRuleArray = getRuleArray();
+        for (Rule rule : currRuleArray) {
+            var itemsInLHS = rule.getAntecedent().length;
+            if (itemsInLHS > 1) {
+                for (int i = 0; i < itemsInLHS; i++) {
+                    int[] newAntecedent = new int[itemsInLHS - 1];
+                    for (int j = 0; j < newAntecedent.length; j++) {
+                        if (j != i)
+                            newAntecedent[j] = rule.getAntecedent()[i];
+                        else
+                            j--;
+                    }
+                    Rule rMinus = new Rule(newAntecedent, rule.getConsequent());
+                    if (countPessimisticError(rule) > countPessimisticError(rMinus))
+                        currRuleArray.remove(rule);
+                }
+            }
+        }
+    }
 
-    public List<Rule> getRuleArray() {
+    private double countPessimisticError(Rule rule) {
+        var numWrongTransactions = 0;
+        for (Transaction transaction : transactionList) {
+            var transactionClass = transaction.getTransactionClass();
+            var transactionItems = transaction.getTransactionItems();
+
+            var ruleLHS = rule.getAntecedent();
+            var ruleClass = rule.getConsequent();
+
+            var match = true;
+
+            for (int item : transactionItems) {
+                if (!ArrayUtils.contains(ruleLHS, item)) {
+                    match = false;
+                    break;
+                }
+            }
+            
+            if (match) {
+                if (ruleClass != transactionClass)
+                    numWrongTransactions++;
+            }   
+        }
+        double trainingError = numWrongTransactions / numTransactions;
+        double pessimisticError = (numWrongTransactions + (rule.getAntecedent().length * 2)) / numTransactions;
+        return pessimisticError;
+    }
+
+    public ArrayList<Rule> getRuleArray() {
         return ruleArray;
     }
 

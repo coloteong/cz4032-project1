@@ -27,6 +27,11 @@ public class RG {
     // We might need this for... im not sure
     // private final int NUMCLASSES = 3;
 
+    //TODO #8
+
+    public ArrayList<Rule> getRuleArray() {
+        return ruleArray;
+    }
 
     public void start() {
         ArrayList<String> data = new ArrayList<>();
@@ -109,7 +114,7 @@ public class RG {
         sc.close();
     }
 
-
+    //TODO #7
     public void generateFrequentItemsets() {
         createInitialItemsets();
         int itemsetNumber = 1;
@@ -334,8 +339,5 @@ public class RG {
         return pessimisticError;
     }
 
-    public ArrayList<Rule> getRuleArray() {
-        return ruleArray;
-    }
 
 }

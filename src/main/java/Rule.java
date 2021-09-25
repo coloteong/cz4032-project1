@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,24 +18,24 @@ public class Rule {
     public double getConfidence() {
         return confidence;
     }
-
-    //public double getSupport() {
-    //    return 
-    //}
-
-    private double countSupport(int[] items) {
-        // implemented in RG, just import this over? 
-        // or maybe can just calculate support
+    
+    public double getSupport() {
+        return support;
     }
 
     private double countConfidence(int[] antecedent, int[] consequent) { 
         List<int[]> arrList = Arrays.asList(antecedent);
         arrList.add(consequent);
+        // change the object array to an int array
         var allElements = arrList.toArray();
-        double allSupport = countSupport(allElements);
-        double lhsSupport = countSupport(antecedent);
+        int length = allElements.length;
+        int[] intArray = new int[length];
+        System.arraycopy(allElements, 0, intArray, 0, length);
 
-        return allSupport/lhsSupport;
+        support = RG.countSupport(intArray);
+        double lhsSupport = RG.countSupport(antecedent);
+
+        return support/lhsSupport;
     }
 
 }

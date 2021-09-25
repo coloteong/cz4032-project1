@@ -2,7 +2,6 @@ import de.viadee.discretizers4j.impl.EqualSizeDiscretizer;
 import org.apache.commons.lang3.*;
 import java.io.*;
 import java.util.*;
-import java.util.stream.IntStream;
 
 public class RG {
 
@@ -13,12 +12,14 @@ public class RG {
     // the number of columns in the data
     private int numColumns;
     // the number of transactions in the source file
-    private int numTransactions;
+    private static int numTransactions;
     private double minSup = 0.01;
     // path to the data file
     private String dataDir;
     // min confidence for all the itemsets
     private double minConf;
+    // the  2D array i.e. dataArray
+    public static int[][] transactions;
     public ArrayList<Integer> dataArray;
     // stores all the rules
     public ArrayList<Rule> ruleArray;
@@ -103,8 +104,10 @@ public class RG {
 
         numItems = (int) intData.stream().distinct().count();
         dataArray = intData;
+        convertToTwoDArray();
         sc.close();
     }
+
 
     public void generateFrequentItemsets() {
         createInitialItemsets();
@@ -122,12 +125,8 @@ public class RG {
         }
     }
 
+
     public void generateAssocRulesFromItemsets() {
-        //TODO #1 
-        // this shouldn't be too complicated
-        // we only care for those rules where the RHS is in 
-        // the 
-        int currentItemsetSize = itemsets.get(0).length;
         // for each itemset, we get a rule
         // let's use variant 2 of mining association rules from the lecture notes
         for (int[] itemset : itemsets) {
@@ -140,8 +139,8 @@ public class RG {
                 ruleArray.add(newRule);
             }
         }
-
     }
+
 
     private void createNewItemsetsFromPrevious() {
         // get the number of items in the current candidate itemset
@@ -188,6 +187,7 @@ public class RG {
         itemsets = new ArrayList<>(freqCandidates.values());
     }
 
+
     public void createInitialItemsets() {
         // itemsets will be an int of all the items
 
@@ -198,21 +198,22 @@ public class RG {
         }
     }
 
+    private void convertToTwoDArray() {
+
+        // convert data to 2d array 
+        transactions = new int[numTransactions][numColumns];
+        for (int i = 0; i < numTransactions; i++) {
+            for (int j = 0; j < numColumns; j++) {
+                transactions[i][j] = dataArray.get((i * numColumns) + j);
+            }
+        }
+    }
 
     private void calculateFrequentItemsets() {
 
         System.out.println("Calculating frequent itemsets to compute the frequency of " + itemsets.size() + " itemsets");
         List<int[]> frequentCandidates = new ArrayList<>();
 
-        // convert data to 2d array 
-        // TODO: bring 2d array to global namespace after discretizing
-        int[][] transactions = new int[numTransactions][numColumns];
-        for (int i = 0; i < numTransactions; i++) {
-            for (int j = 0; j < numColumns; j++) {
-                transactions[i][j] = dataArray.get((i * numColumns) + j);
-            }
-        }
-        
         // count support for each itemset 
         for (int i = 0; i < itemsets.size(); i++) {
             // add to the frequent candidates
@@ -225,7 +226,8 @@ public class RG {
         itemsets = frequentCandidates;
     }
 
-    private double countSupport(int[] items, int[][] transactions) {
+
+    public double countSupport(int[] items, int[][] transactions) {
         /*
           match: whether the transaction has al the items in an itemset
           count: number of successful matches
@@ -247,10 +249,37 @@ public class RG {
                 count++;
             }
         }
-        return ((count / (double) (numTransactions)));
+        return count / (double) (numTransactions);
     }
+
+    public static double countSupport(int[] items) {
+        /*
+          match: whether the transaction has al the items in an itemset
+          count: number of successful matches
+         */
+        boolean match;
+        int count = 0;
+
+        // check items against each transaction
+        for (int i = 0; i < numTransactions; i++) {
+            match = true;
+            // set match to false if there is an item from items is missing in transaction
+            for (int c: items) {
+                if (!ArrayUtils.contains(transactions[i], c)) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                count++;
+            }
+        }
+        return count / (double) (numTransactions);
+    }
+
 
     public ArrayList<Rule> getRuleArray() {
         return ruleArray;
     }
+
 }

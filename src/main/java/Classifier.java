@@ -17,6 +17,7 @@ public class Classifier{
         else if (r1.getSupport() > r2.getSupport()) { return r1; } 
         else if (r2.getSupport() > r1.getSupport()) { return r2; }
         // 3. comparing which was generated first
+        //FIXME #5
         else if (ArrayUtils.indexOf(RG.getRuleArray(), r1) < ArrayUtils.indexOf(RG.getRuleArray(), r2)) { return r1; }
         else { return r2; }
     }

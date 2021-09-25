@@ -291,12 +291,19 @@ public class RG {
     }
 
     private void pruneRules() {
+        // prune the rules in the current Rule Array 
         ArrayList<Rule> currRuleArray = getRuleArray();
         for (Rule rule : currRuleArray) {
             var itemsInLHS = rule.getAntecedent().length;
+            // we can only have an R^minus if the number of items on the LHS
+            // is more than 1
             if (itemsInLHS > 1) {
+                // for the number of items in the LHS = n
+                // we can get n rules of size n - 1
+                // using N choose N - 1
                 for (int i = 0; i < itemsInLHS; i++) {
                     int[] newAntecedent = new int[itemsInLHS - 1];
+                    // what we do is we choose which item to ignore i.e. i
                     for (int j = 0; j < newAntecedent.length; j++) {
                         if (j != i)
                             newAntecedent[j] = rule.getAntecedent()[i];
@@ -312,14 +319,17 @@ public class RG {
     }
 
     private double countPessimisticError(Rule rule) {
+        // since not all transactions will apply to a rule
+        // we have to calculate the error based on the number 
+        // of transactions that can be applied as well as 
+        // the number of wrong transactions
         var numWrongTransactions = 0;
+        var numApplicableTransactions = 0;
         for (Transaction transaction : transactionList) {
             var transactionClass = transaction.getTransactionClass();
             var transactionItems = transaction.getTransactionItems();
-
             var ruleLHS = rule.getAntecedent();
             var ruleClass = rule.getConsequent();
-
             var match = true;
 
             for (int item : transactionItems) {
@@ -328,14 +338,14 @@ public class RG {
                     break;
                 }
             }
-            
             if (match) {
+                numApplicableTransactions++;
                 if (ruleClass != transactionClass)
                     numWrongTransactions++;
-            }   
+            }
         }
-        double trainingError = numWrongTransactions / numTransactions;
-        double pessimisticError = (numWrongTransactions + (rule.getAntecedent().length * 2)) / numTransactions;
+        double trainingError = numWrongTransactions / numApplicableTransactions;
+        double pessimisticError = (numWrongTransactions + (rule.getAntecedent().length * 2)) / numApplicableTransactions;
         return pessimisticError;
     }
 

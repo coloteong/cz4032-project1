@@ -12,19 +12,20 @@ public class RG {
     // the number of columns in the data
     private int numColumns;
     // the number of transactions in the source file
-    private static int numTransactions;
+    private int numTransactions;
     private double minSup = 0.01;
     // path to the data file
     private String dataDir;
     // min confidence for all the itemsets
     private double minConf;
     // the  2D array i.e. dataArray
-    public static int[][] transactions;
-    public ArrayList<Integer> dataArray;
+    private Transaction[] transactionList;
+    public List<Integer> dataArray;
     // stores all the rules
-    public ArrayList<Rule> ruleArray;
+    public List<Rule> ruleArray;
 
-    private static final int NUMCLASSES = 3;
+    // We might need this for... im not sure
+    // private final int NUMCLASSES = 3;
 
 
     public void start() {
@@ -55,7 +56,7 @@ public class RG {
                 System.out.println("File cannot be found");
             }
         }
-// discretize the values in each column
+        // discretize the values in each column
         // need to have copiedValues since discretizer.fit sorts the array
         Double[][] values = new Double[numColumns][numTransactions];
         Double[][] copiedValues = new Double[numColumns][numTransactions];
@@ -104,7 +105,7 @@ public class RG {
 
         numItems = (int) intData.stream().distinct().count();
         dataArray = intData;
-        convertToTwoDArray();
+        convertToTransactionList();
         sc.close();
     }
 
@@ -198,7 +199,7 @@ public class RG {
         }
     }
 
-    private void convertToTwoDArray() {
+/*     private void convertToTwoDArray() {
 
         // convert data to 2d array 
         transactions = new int[numTransactions][numColumns];
@@ -206,6 +207,24 @@ public class RG {
             for (int j = 0; j < numColumns; j++) {
                 transactions[i][j] = dataArray.get((i * numColumns) + j);
             }
+        }
+    } */
+
+    private void convertToTransactionList() {
+
+        transactionList = new Transaction[numTransactions];
+        for (int i = 0; i < numTransactions; i++) {
+            int transactionClass = 0;
+            int[] transactionItems = new int[numColumns - 1];
+            for (int j = 0; j < numColumns; j++) {
+                if (j == 0) {
+                    transactionClass = dataArray.get((i * numColumns) + j);
+                } else {
+                    transactionItems[j - 1] = dataArray.get((i * numColumns) + j);
+                }
+            }
+            Transaction transaction = new Transaction(transactionClass, transactionItems);
+            transactionList[i] = transaction;
         }
     }
 
@@ -217,7 +236,7 @@ public class RG {
         // count support for each itemset 
         for (int i = 0; i < itemsets.size(); i++) {
             // add to the frequent candidates
-            double support = countSupport(itemsets.get(i), transactions);
+            double support = countSupport(itemsets.get(i), transactionList);
             if (support >= minSup) {
                 frequentCandidates.add(itemsets.get(i));
             }
@@ -227,7 +246,7 @@ public class RG {
     }
 
 
-    public double countSupport(int[] items, int[][] transactions) {
+    public double countSupport(int[] items, Transaction[] transactions) {
         /*
           match: whether the transaction has al the items in an itemset
           count: number of successful matches
@@ -240,7 +259,7 @@ public class RG {
             match = true;
             // set match to false if there is an item from items is missing in transaction
             for (int c: items) {
-                if (!ArrayUtils.contains(transactions[i], c)) {
+                if (!ArrayUtils.contains(transactions[i].getTransactionItems(), c)) {
                     match = false;
                     break;
                 }
@@ -252,7 +271,7 @@ public class RG {
         return count / (double) (numTransactions);
     }
 
-    public static double countSupport(int[] items) {
+    public double countSupport(int[] items) {
         /*
           match: whether the transaction has al the items in an itemset
           count: number of successful matches
@@ -265,7 +284,7 @@ public class RG {
             match = true;
             // set match to false if there is an item from items is missing in transaction
             for (int c: items) {
-                if (!ArrayUtils.contains(transactions[i], c)) {
+                if (!ArrayUtils.contains(transactionList[i].getTransactionItems(), c)) {
                     match = false;
                     break;
                 }
@@ -278,7 +297,7 @@ public class RG {
     }
 
 
-    public ArrayList<Rule> getRuleArray() {
+    public List<Rule> getRuleArray() {
         return ruleArray;
     }
 

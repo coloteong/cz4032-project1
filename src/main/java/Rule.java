@@ -6,6 +6,9 @@ public class Rule {
     private int consequent;
     private double confidence;
     private double support;
+    // needed in CBA-CB M2
+    private int transactionsCovered = 0;
+    private boolean coveredCasesCorrectly;
 
     public Rule(int[] antecedent, int consequent) {
         this.antecedent = antecedent;
@@ -38,6 +41,22 @@ public class Rule {
         double lhsSupport = RG.countSupport(antecedent);
 
         return support/lhsSupport;
+    }
+
+    public void incrementTransactionsCovered() {
+        transactionsCovered++;
+    }
+
+    public void decrementTransactionsCovered() {
+        transactionsCovered--;
+    }
+
+    public int getTransactionsCovered() {
+        return transactionsCovered;
+    }
+
+    public void markRule() {
+        coveredCasesCorrectly = true;
     }
 
 }

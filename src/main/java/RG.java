@@ -22,15 +22,19 @@ public class RG {
     private static Transaction[] transactionList;
     public ArrayList<Integer> dataArray;
     // stores all the rules
-    public ArrayList<Rule> ruleArray;
+    private static ArrayList<Rule> ruleArray;
 
     // We might need this for... im not sure
     // private final int NUMCLASSES = 3;
 
     //TODO #8
 
-    public ArrayList<Rule> getRuleArray() {
+    public static ArrayList<Rule> getRuleArray() {
         return ruleArray;
+    }
+
+    public static Transaction[] getTransactionList() {
+        return transactionList;
     }
 
     public void start() {

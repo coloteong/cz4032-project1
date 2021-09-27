@@ -13,25 +13,24 @@ public class Rule {
     public Rule(int[] antecedent, int consequent) {
         this.antecedent = antecedent;
         this.consequent = consequent;
-
-        // should we make a setConfidence and setSupport method, and invoke in RG?
-        confidence = countConfidence(antecedent, consequent);
+        this.confidence = countConfidence(this.antecedent, this.consequent);
+        this.support = RG.countSupport(this.antecedent);
     }
 
     public double getConfidence() {
-        return confidence;
+        return this.confidence;
     }
     
     public double getSupport() {
-        return support;
+        return this.support;
     }
 
     public int[] getAntecedent() {
-        return antecedent;
+        return this.antecedent;
     }
 
     public int getConsequent() {
-        return consequent;
+        return this.consequent;
     }
 
     private double countConfidence(int[] antecedent, int consequent) { 

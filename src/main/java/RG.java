@@ -234,7 +234,7 @@ public class RG {
         // count support for each itemset 
         for (int i = 0; i < itemsets.size(); i++) {
             // add to the frequent candidates
-            double support = countSupport(itemsets.get(i), transactionList);
+            double support = countSupport(itemsets.get(i));
             if (support >= minSup) {
                 frequentCandidates.add(itemsets.get(i));
             }
@@ -243,31 +243,6 @@ public class RG {
         itemsets = frequentCandidates;
     }
 
-
-    public double countSupport(int[] items, Transaction[] transactions) {
-        /*
-          match: whether the transaction has al the items in an itemset
-          count: number of successful matches
-         */
-        boolean match;
-        int count = 0;
-
-        // check items against each transaction
-        for (int i = 0; i < numTransactions; i++) {
-            match = true;
-            // set match to false if there is an item from items is missing in transaction
-            for (int c: items) {
-                if (!ArrayUtils.contains(transactions[i].getTransactionItems(), c)) {
-                    match = false;
-                    break;
-                }
-            }
-            if (match) {
-                count++;
-            }
-        }
-        return count / (double) (numTransactions);
-    }
 
     public static double countSupport(int[] items) {
         /*

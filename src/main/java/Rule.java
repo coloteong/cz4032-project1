@@ -1,5 +1,6 @@
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 public class Rule {
@@ -10,6 +11,7 @@ public class Rule {
     // needed in CBA-CB M2
     private Hashtable<Integer, Integer> classCasesCovered;
     private boolean coveredCasesCorrectly;
+    private ArrayList<Rule> replace = new ArrayList<>();
 
     public Rule(int[] antecedent, int consequent) {
         this.antecedent = antecedent;
@@ -32,6 +34,10 @@ public class Rule {
 
     public int getConsequent() {
         return this.consequent;
+    }
+
+    public boolean getCoveredCasesCorrectly() {
+        return coveredCasesCorrectly;
     }
 
     private double countConfidence(int[] antecedent, int consequent) { 
@@ -59,6 +65,10 @@ public class Rule {
     public void removeClassCasesCovered(int transactionClass) {
         var currNum = classCasesCovered.get(transactionClass);
         classCasesCovered.put(transactionClass, currNum - 1);
+    }
+
+    public void addToReplace(Rule rule) {
+        replace.add(rule);
     }
 
 }

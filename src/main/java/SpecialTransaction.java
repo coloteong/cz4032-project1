@@ -10,4 +10,20 @@ public class SpecialTransaction {
         this.cRule = cRule;
         this.wRule = wRule;
     }
+
+    public int getTransactionID() {
+        return transactionID;
+    }
+
+    public int getTransactionClass() {
+        return transactionClass;
+    }
+
+    public Rule getCRule() {
+        return cRule;
+    }
+
+    public Rule getWRule() {
+        return wRule;
+    }
 }

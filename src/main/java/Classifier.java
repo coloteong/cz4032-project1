@@ -35,6 +35,7 @@ public class Classifier{
         }
     }
 
+    // CBA-CB M2 Stage 1
     private void findCRuleAndWRule() {
         var transactionList = RG.getTransactionList();
         for (Transaction transaction : transactionList) {
@@ -53,8 +54,7 @@ public class Classifier{
                             if(transaction.getCRule() == null) {
                                 transaction.setCRule(rule);
                                 setOfCRules.add(rule);
-                                // mark rule to indicate that it classifies a case correctly
-                                rule.incrementTransactionsCovered();
+                                rule.addClassCasesCovered(transaction.getTransactionClass());
                             }
                         } else {
                             if(transaction.getWRule() == null) {
@@ -77,4 +77,59 @@ public class Classifier{
             }
         }
     }
+
+    // CBA-CB: M2 (Stage 2)
+    private void goThroughDataAgain() {
+        for (SpecialTransaction trans : setOfSpecialTransactions) {
+            if (trans.getWRule().getCoveredCasesCorrectly()) {
+                trans.getCRule().removeClassCasesCovered(trans.getTransactionClass());
+                trans.getWRule().addClassCasesCovered(trans.getTransactionClass());
+            } else {
+                var wSet = allCoverRules(trans);
+                for (Rule rule : wSet) {
+                    rule.addToReplace(trans.getCRule());
+                    rule.addClassCasesCovered(trans.getTransactionClass());
+                }
+                for (Rule rule : wSet) {
+                    if (!setOfCRulesWithHigherPrecedence.contains(rule)) {
+                        setOfCRulesWithHigherPrecedence.add(rule);
+                    }
+                }
+            }
+        }
+    }
+
+    private ArrayList<Rule> allCoverRules(SpecialTransaction specialTransaction) {
+        ArrayList<Rule> wSet = new ArrayList<Rule>();
+        // since the ids are just consecutive integers from 0 to n
+        var currTransaction = RG.getTransactionList()[specialTransaction.getTransactionID()];
+        // for (Transaction transaction : RG.getTransactionList()) {
+        //     if (transaction.getTransactionID() == specialTransaction.getTransactionID()) {
+        //         Transaction currTransaction = transaction;
+        //         break;
+        //     }
+        // }
+        for (Rule cRule : setOfCRules) {
+            // if the cRule has a higher precedence
+            if (comparePrecedence(cRule, specialTransaction.getCRule()) == cRule) {
+                var match = true;
+                // check if it wrongly classifies
+                for (int item : currTransaction.getTransactionItems()) {
+                    if (!ArrayUtils.contains(cRule.getAntecedent(), item)) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) {
+                    if (cRule.getConsequent() != currTransaction.getTransactionClass()) {
+                        wSet.add(cRule);
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+        return wSet;
+    }
+
 }

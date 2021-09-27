@@ -122,12 +122,10 @@ public class RG {
     public void generateFrequentItemsets() {
         createInitialItemsets();
         int itemsetNumber = 1;
-        //while (itemsets.size() > 0) {
-        while (!itemsets.isEmpty()) {
+        while (itemsets.size() > 0) {
             System.out.println("Itemsets.size: " + itemsets.size());
             calculateFrequentItemsets();
-            if (!itemsets.isEmpty()) {
-            // if (itemsets.size() != 0) {
+            if (itemsets.size() != 0) {
                 System.out.println("found " + itemsets.size() + " frequent itemsets of size " + itemsetNumber);
                 createNewItemsetsFromPrevious();
             }

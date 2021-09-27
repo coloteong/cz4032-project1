@@ -1,5 +1,6 @@
 import java.util.Arrays;
 import java.util.List;
+import java.util.Hashtable;
 
 public class Rule {
     private int[] antecedent;
@@ -7,7 +8,7 @@ public class Rule {
     private double confidence;
     private double support;
     // needed in CBA-CB M2
-    private int transactionsCovered = 0;
+    private Hashtable<Integer, Integer> classCasesCovered;
     private boolean coveredCasesCorrectly;
 
     public Rule(int[] antecedent, int consequent) {
@@ -42,20 +43,22 @@ public class Rule {
         return support/lhsSupport;
     }
 
-    public void incrementTransactionsCovered() {
-        transactionsCovered++;
-    }
-
-    public void decrementTransactionsCovered() {
-        transactionsCovered--;
-    }
-
-    public int getTransactionsCovered() {
-        return transactionsCovered;
-    }
-
     public void markRule() {
         coveredCasesCorrectly = true;
+    }
+
+    public void addClassCasesCovered(int transactionClass) {
+            if (classCasesCovered.get(transactionClass) == null) {
+                classCasesCovered.put(transactionClass, 1);
+            } else {
+               var currNum = classCasesCovered.get(transactionClass);
+               classCasesCovered.put(transactionClass, currNum + 1);
+            }
+    }
+
+    public void removeClassCasesCovered(int transactionClass) {
+        var currNum = classCasesCovered.get(transactionClass);
+        classCasesCovered.put(transactionClass, currNum - 1);
     }
 
 }

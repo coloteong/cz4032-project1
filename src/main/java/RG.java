@@ -322,7 +322,7 @@ public class RG {
             }
         }
         double trainingError = numWrongTransactions / numApplicableTransactions;
-        double pessimisticError = (numWrongTransactions + (rule.getAntecedent().length * 2)) / numApplicableTransactions;
+        double pessimisticError = (numWrongTransactions + (rule.getAntecedent().length * 2)) / (double) numApplicableTransactions;
         return pessimisticError;
     }
 

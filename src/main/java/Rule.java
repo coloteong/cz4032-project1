@@ -1,5 +1,7 @@
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -10,9 +12,9 @@ public class Rule implements Comparable<Rule>{
     private double confidence;
     private double support;
     // needed in CBA-CB M2
-    private Hashtable<Integer, Integer> classCasesCovered;
+    private HashMap<Integer, Integer> classCasesCovered;
     private boolean coveredCasesCorrectly;
-    private ArrayList<Rule> replace = new ArrayList<>();
+    private ArrayList<SpecialRule> replace = new ArrayList<>();
     private static int count = 0;
 
     public Rule(int[] antecedent, int consequent) {
@@ -22,6 +24,14 @@ public class Rule implements Comparable<Rule>{
         this.support = RG.countSupport(this.antecedent);
         ruleID = count;
         count++;
+    }
+
+    public ArrayList<SpecialRule> getReplace() {
+        return replace;
+    }
+
+    public HashMap<Integer, Integer> getClassCasesCovered() {
+        return classCasesCovered;
     }
 
     public int getRuleID() {
@@ -75,8 +85,20 @@ public class Rule implements Comparable<Rule>{
         classCasesCovered.put(transactionClass, currNum - 1);
     }
 
-    public void addToReplace(Rule rule) {
+    public void addToReplace(SpecialRule rule) {
         replace.add(rule);
+    }
+
+    public int errorsOfRule() {
+        int error = 0;
+        for (Entry<Integer, Integer> entry: classCasesCovered.entrySet()) {
+            var transactionClass = entry.getKey();
+            var count = entry.getValue();
+            if (consequent != transactionClass) {
+                error += count;
+            }
+        }
+        return error;
     }
 
     @Override

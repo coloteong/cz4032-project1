@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.stream.IntStream;
 import org.apache.commons.lang3.*;
 
@@ -12,6 +13,9 @@ public class Classifier{
     private List<Rule> setOfCRulesWithHigherPrecedence;
     // this is set A in the paper
     private List<SpecialTransaction> setOfSpecialTransactions;
+    private ArrayList<Transaction> coveredTransaction = new ArrayList<>();
+    // this is set C in the paper
+    private ArrayList<ClassificationRule> classifierRules = new ArrayList<>();
 
 
 
@@ -91,7 +95,8 @@ public class Classifier{
             } else {
                 var wSet = allCoverRules(trans);
                 for (Rule rule : wSet) {
-                    rule.addToReplace(trans.getCRule());
+                    SpecialRule replaceRule = new SpecialRule(trans.getTransactionID(), trans.getTransactionClass(), trans.getCRule());
+                    rule.addToReplace(replaceRule);
                     rule.addClassCasesCovered(trans.getTransactionClass());
                 }
                 for (Rule rule : wSet) {
@@ -116,7 +121,7 @@ public class Classifier{
         for (Rule cRule : setOfCRules) {
             // if the cRule has a higher precedence
             // if (comparePrecedence(cRule, specialTransaction.getCRule()) == cRule) 
-            if (cRule > specialTransaction.getCRule()) {
+            if (cRule.compareTo(specialTransaction.getCRule()) > 0) {
                 var match = true;
                 // check if it wrongly classifies
                 for (int item : currTransaction.getTransactionItems()) {
@@ -135,6 +140,107 @@ public class Classifier{
             }
         }
         return wSet;
+    }
+
+    private void chooseFinalRules() {
+        var transactionList = RG.getTransactionList();
+        var classDistr = compClassDistri(transactionList);
+        int ruleErrors = 0;
+        // line 3
+        Collections.sort(setOfCRulesWithHigherPrecedence);
+        // line 4
+        for (Rule rule : setOfCRulesWithHigherPrecedence) {
+            var ruleClass = rule.getConsequent();
+            // line 5
+            if (rule.getClassCasesCovered().get(ruleClass) != 0) {
+                // line 6
+                for (SpecialRule replaceRule : rule.getReplace()) {
+                    // if the transactionID has been covered
+                    if (coveredTransaction.contains(replaceRule.getTransactionID())) {
+                        rule.removeClassCasesCovered(replaceRule.getTransactionClass());
+                    } else {
+                        //FIXME #10
+                        replaceRule.getCRule().removeClassCasesCovered(replaceRule.getTransactionClass());
+                    }
+                }
+                ruleErrors += rule.errorsOfRule();
+                classDistr = updateClassDistr(rule, classDistr);
+                var defaultClass = selectDefault(classDistr);
+                var defaultErrors = defErr(defaultClass, classDistr);
+                var totalErrors = ruleErrors + defaultErrors;
+                ClassificationRule classificationRule = new ClassificationRule(rule, defaultClass, totalErrors);
+                classifierRules.add(classificationRule);
+            }
+        }
+        int min = 9999;
+        int lastClass = 0;
+        // line 18
+        for (int i = 0; i < classifierRules.size(); i++) {
+            if (classifierRules.get(i).getTotalError() < min) {
+                min = classifierRules.get(i).getTotalError()
+            } else {
+                break;
+                lastClass = i - 1;
+            }
+        }
+
+        // line 19
+        int defaultClass = classifierRules.get(lastClass).getDefaultClass();
+        // not sure how to add it to the end of C
+        // TODO #11
+
+    }
+
+    // count the number of training cases in each class
+    // in the initial training data
+    private HashMap<Integer, Integer> compClassDistri(Transaction[] transactionList) {
+        HashMap<Integer, Integer> classDistr = new HashMap<>();
+        for (Transaction transaction : transactionList) {
+            var transactionClass = transaction.getTransactionClass();
+            if (classDistr.get(transactionClass) == null) {
+                classDistr.put(transactionClass, 1);
+            } else {
+                classDistr.put(transactionClass, classDistr.get(transactionClass) + 1);
+            }
+        }
+        return classDistr;
+    }
+
+    private HashMap<Integer, Integer> updateClassDistr(Rule rule, HashMap<Integer, Integer> classDistr) {
+        var newClassDistr = new HashMap<Integer, Integer>();
+        var classCasesCovered = rule.getClassCasesCovered();
+        for (Entry<Integer, Integer> entry: classCasesCovered.entrySet()) {
+            var transactionClass = entry.getKey();
+            var count = entry.getValue();
+            var currCount = classDistr.get(transactionClass);
+            newClassDistr.put(transactionClass, currCount - count);
+        }
+    return newClassDistr;
+    }
+
+    private int selectDefault(HashMap<Integer, Integer> classDistr) {
+        int maxClass = 0;
+        int maxCount = 0;
+        for (Map.Entry<Integer, Integer> entry : classDistr.entrySet()) {
+            Integer transClass = entry.getKey();
+            Integer transCount = entry.getValue();
+            if (transCount > maxCount) {
+                maxClass = transClass;
+                maxCount = transCount;
+            }
+        }
+
+        return maxClass;
+    }
+
+    private int defErr(int defaultClass, HashMap<Integer, Integer> classDistr) {
+        int error = 0;
+        for (Map.Entry<Integer, Integer> entry : classDistr.entrySet()) {
+            if (entry.getKey() != defaultClass) {
+                error += entry.getValue();
+            }
+        }
+        return error;
     }
 
 }

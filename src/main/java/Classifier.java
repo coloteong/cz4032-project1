@@ -15,26 +15,30 @@ public class Classifier{
 
 
 
-    public Rule comparePrecedence(Rule r1, Rule r2) {
-        // 1. comparing confidence
-        if (r1.getConfidence() > r2.getConfidence()) { return r1;}
-        else if (r2.getConfidence() > r1.getConfidence()) { return r2; }
-        // 2. comparing support
-        else if (r1.getSupport() > r2.getSupport()) { return r1; } 
-        else if (r2.getSupport() > r1.getSupport()) { return r2; }
-        // 3. comparing which was generated first
-        //FIXME #5
-        else if (ArrayUtils.indexOf(RG.getRuleArray(), r1) < ArrayUtils.indexOf(RG.getRuleArray(), r2)) { return r1; }
-        else { return r2; }
+    // public Rule comparePrecedence(Rule r1, Rule r2) {
+    //     // 1. comparing confidence
+    //     if (r1.getConfidence() > r2.getConfidence()) { return r1;}
+    //     else if (r2.getConfidence() > r1.getConfidence()) { return r2; }
+    //     // 2. comparing support
+    //     else if (r1.getSupport() > r2.getSupport()) { return r1; } 
+    //     else if (r2.getSupport() > r1.getSupport()) { return r2; }
+    //     // 3. comparing which was generated first
+    //     //FIXME #5
+    //     else if (ArrayUtils.indexOf(RG.getRuleArray(), r1) < ArrayUtils.indexOf(RG.getRuleArray(), r2)) { return r1; }
+    //     else { return r2; }
+    // }
+
+    // private void sortRules() {
+    //     for (int i = 0; i < RG.getRuleArray().length - 1; i++){
+    //         new Rule betterRule = comparePrecedence(ruleArray., r2);
+
+    //     }
+    // }
+
+    private void start() {
+        sortedRuleArray = RG.getRuleArray();
+        Collections.sort(sortedRuleArray);
     }
-
-    private void sortRules() {
-        for (int i = 0; i < RG.getRuleArray().length - 1; i++){
-            new Rule betterRule = comparePrecedence(ruleArray., r2);
-
-        }
-    }
-
     // CBA-CB M2 Stage 1
     private void findCRuleAndWRule() {
         var transactionList = RG.getTransactionList();
@@ -111,11 +115,12 @@ public class Classifier{
         // }
         for (Rule cRule : setOfCRules) {
             // if the cRule has a higher precedence
-            if (comparePrecedence(cRule, specialTransaction.getCRule()) == cRule) {
+            // if (comparePrecedence(cRule, specialTransaction.getCRule()) == cRule) 
+            if (cRule > specialTransaction.getCRule()) {
                 var match = true;
                 // check if it wrongly classifies
                 for (int item : currTransaction.getTransactionItems()) {
-                    if (!ArrayUtils.contains(cRule.getAntecedent(), item)) {
+                   if (!ArrayUtils.contains(cRule.getAntecedent(), item)) {
                         match = false;
                         break;
                     }

@@ -3,7 +3,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-public class Rule {
+public class Rule implements Comparable<Rule>{
+    private int ruleID;
     private int[] antecedent;
     private int consequent;
     private double confidence;
@@ -12,12 +13,19 @@ public class Rule {
     private Hashtable<Integer, Integer> classCasesCovered;
     private boolean coveredCasesCorrectly;
     private ArrayList<Rule> replace = new ArrayList<>();
+    private static int count = 0;
 
     public Rule(int[] antecedent, int consequent) {
         this.antecedent = antecedent;
         this.consequent = consequent;
         this.confidence = countConfidence(this.antecedent, this.consequent);
         this.support = RG.countSupport(this.antecedent);
+        ruleID = count;
+        count++;
+    }
+
+    public int getRuleID() {
+        return ruleID;
     }
 
     public double getConfidence() {
@@ -70,6 +78,26 @@ public class Rule {
     public void addToReplace(Rule rule) {
         replace.add(rule);
     }
+
+    @Override
+    public int compareTo(Rule other) {
+        // compareTo should return < 0 if this is supposed to be
+        // less than other, > 0 if this is supposed to be greater than 
+        // other and 0 if they are supposed to be equal
+        if (confidence > other.getConfidence()) {
+            return 1;
+        } else if (confidence == other.getConfidence()) {
+            if (support > other.getSupport()) {
+                return 1;
+            } else if (support == other.getSupport()) {
+                if (ruleID < other.getRuleID() ) {
+                    return 1;
+                }
+            }
+        }
+        return -1;
+    }
+
 
 }
 

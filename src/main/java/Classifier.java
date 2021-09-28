@@ -16,6 +16,8 @@ public class Classifier{
     private ArrayList<Transaction> coveredTransaction = new ArrayList<>();
     // this is set C in the paper
     private ArrayList<ClassificationRule> classifierRules = new ArrayList<>();
+    private ArrayList<Rule> finalClassifier = new ArrayList<>();
+    private int finalDefaultClass;
 
 
 
@@ -142,6 +144,7 @@ public class Classifier{
         return wSet;
     }
 
+    // stage 3
     private void chooseFinalRules() {
         var transactionList = RG.getTransactionList();
         var classDistr = compClassDistri(transactionList);
@@ -185,10 +188,12 @@ public class Classifier{
         }
 
         // line 19
-        int defaultClass = classifierRules.get(lastClass).getDefaultClass();
+        finalDefaultClass = classifierRules.get(lastClass).getDefaultClass();
         // not sure how to add it to the end of C
         // TODO #11
-
+        for (int j = 0; j <= lastClass; j++) {
+            finalClassifier.add(classifierRules.get(j).getRule());
+        }
     }
 
     // count the number of training cases in each class

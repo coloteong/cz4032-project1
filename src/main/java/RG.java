@@ -46,6 +46,7 @@ public class RG {
         ArrayList<String> data = new ArrayList<>();
         Scanner sc = new Scanner(System.in);
         boolean fileFound = false;
+        int classIdx = 0;
         /*
         continually loop until a valid data file is read
          */
@@ -62,7 +63,6 @@ public class RG {
                 System.out.println(headerRow);
 
                 boolean classFound = false;
-                int classIdx = 0;
                 while (!classFound) {
                     System.out.println("Enter class name: ");
                     String className = sc.nextLine();
@@ -74,7 +74,6 @@ public class RG {
                 // get rid of Header
                 // dataScanner.nextLine();
 
-                changeClassPosition(classIdx);
                 
                 while (dataScanner.hasNextLine()) {
                     String tempData = dataScanner.nextLine();
@@ -91,14 +90,15 @@ public class RG {
         }
         // discretize the values in each column
         // need to have copiedValues since discretizer.fit sorts the array
+        //FIXME: numColumns is the total number of columns including class column. Do we need to minus 1?
         Double[][] values = new Double[numColumns][numTransactions];
         Double[][] copiedValues = new Double[numColumns][numTransactions];
-        //TODO: currently i starts from 1 because the target is the 0th column
-        // this needs to be changed when we change the data
-        for (int i = 1; i < numColumns; i++) {
-            for (int j = 0; j < numTransactions; j++) {
-                values[i][j] = Double.parseDouble(data.get((j * numColumns) + i));
-                copiedValues[i][j] = values[i][j];
+        for (int i = 0; i < numColumns; i++) {
+            if (i != classIdx) {
+                for (int j = 0; j < numTransactions; j++) {
+                    values[i][j] = Double.parseDouble(data.get((j * numColumns) + i));
+                    copiedValues[i][j] = values[i][j];
+                }
             }
             //TODO: #3 the current discretizer is the EqualSizeDiscretizer, can look for other libraries or other 
             // discretizers to implement a better algorithm

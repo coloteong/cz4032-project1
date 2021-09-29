@@ -37,6 +37,11 @@ public class RG {
         return transactionList;
     }
 
+    private void changeClassPosition(int classIdx) {
+
+    } 
+
+
     public void start() {
         ArrayList<String> data = new ArrayList<>();
         Scanner sc = new Scanner(System.in);
@@ -50,8 +55,27 @@ public class RG {
                 dataDir = sc.nextLine();
                 Scanner dataScanner = new Scanner(new File(dataDir));
                 dataScanner.useDelimiter(",");
+                System.out.println("Column names:");
+
+                String headerRow = dataScanner.nextLine();
+                String[] headers = headerRow.split(",");
+                System.out.println(headerRow);
+
+                boolean classFound = false;
+                int classIdx = 0;
+                while (!classFound) {
+                    System.out.println("Enter class name: ");
+                    String className = sc.nextLine();
+                    classIdx = Arrays.asList(headers).indexOf(className);
+                    if (classIdx != -1) {
+                        classFound = true;
+                    }
+                }
                 // get rid of Header
-                dataScanner.nextLine();
+                // dataScanner.nextLine();
+
+                changeClassPosition(classIdx);
+                
                 while (dataScanner.hasNextLine()) {
                     String tempData = dataScanner.nextLine();
                     String[] tokens = tempData.split(",");

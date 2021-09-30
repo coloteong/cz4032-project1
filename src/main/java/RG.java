@@ -15,7 +15,7 @@ public class RG {
     private int numColumns;
     // the number of transactions in the source file
     private static int numTransactions;
-    private double minSup = 0.1;
+    private double minSup = 0.01;
     // path to the data file
     private String dataDir;
     // min confidence for all the itemsets
@@ -39,16 +39,11 @@ public class RG {
         return transactionList;
     }
 
-    private void changeClassPosition(int classIdx) {
-
-    } 
-
 
     public void start() {
         ArrayList<String> data = new ArrayList<>();
         Scanner sc = new Scanner(System.in);
         boolean fileFound = false;
-        int classIdx = 0;
         /*
         continually loop until a valid data file is read
          */
@@ -143,13 +138,19 @@ public class RG {
         generateAssocRulesFromItemsets();
         pruneRules();
         int itemsetNumber = 1;
-        while (itemsets.size() > 0) {
+        while (!itemsets.isEmpty()) {
             System.out.println("Itemsets.size: " + itemsets.size());
             itemsets = calculateFrequentItemsets();
-            if (itemsets.size() != 0) {
+            System.out.println("Frequent Itemset size: " + itemsets.size());
+            if (!itemsets.isEmpty()) {
                 System.out.println("found " + itemsets.size() + " frequent itemsets of size " + itemsetNumber);
                 itemsets = (List<int[]>) createNewItemsetsFromPrevious();
             }
+            generateAssocRulesFromItemsets();
+            System.out.println("Size of ruleArray: " + ruleArray.size());
+            // TODO: #13 pruneRules takes too long
+            pruneRules();
+            System.out.println("Size of ruleArray: " + ruleArray.size());
             itemsetNumber++;
         }
     }

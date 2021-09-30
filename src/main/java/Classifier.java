@@ -180,10 +180,10 @@ public class Classifier{
         // line 18
         for (int i = 0; i < classifierRules.size(); i++) {
             if (classifierRules.get(i).getTotalError() < min) {
-                min = classifierRules.get(i).getTotalError()
+                min = classifierRules.get(i).getTotalError();
             } else {
-                break;
                 lastClass = i - 1;
+                break;
             }
         }
 

@@ -3,7 +3,6 @@ public class Main {
         RG rg = new RG();
         rg.start();
         rg.generateFrequentItemsets();
-        rg.generateAssocRulesFromItemsets();
     }
 
 }

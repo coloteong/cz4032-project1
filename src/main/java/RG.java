@@ -3,6 +3,8 @@ import org.apache.commons.lang3.*;
 import java.io.*;
 import java.util.*;
 
+import javax.sound.midi.Soundbank;
+
 public class RG {
 
     // list of the current itemsets
@@ -13,7 +15,7 @@ public class RG {
     private int numColumns;
     // the number of transactions in the source file
     private static int numTransactions;
-    private double minSup = 0.01;
+    private double minSup = 0.1;
     // path to the data file
     private String dataDir;
     // min confidence for all the itemsets
@@ -22,7 +24,7 @@ public class RG {
     private static Transaction[] transactionList;
     public ArrayList<Integer> dataArray;
     // stores all the rules
-    private static ArrayList<Rule> ruleArray;
+    private static ArrayList<Rule> ruleArray = new ArrayList<>();
 
     // We might need this for... im not sure
     // private final int NUMCLASSES = 3;
@@ -50,6 +52,7 @@ public class RG {
         /*
         continually loop until a valid data file is read
          */
+        var classColumn = 0;
         while (!fileFound) {
             try {
                 System.out.println("Type in directory to dataset (.data): ");
@@ -62,19 +65,19 @@ public class RG {
                 String[] headers = headerRow.split(",");
                 System.out.println(headerRow);
 
-                boolean classFound = false;
-                while (!classFound) {
-                    System.out.println("Enter class name: ");
-                    String className = sc.nextLine();
-                    classIdx = Arrays.asList(headers).indexOf(className);
-                    if (classIdx != -1) {
-                        classFound = true;
-                    }
-                }
-                // get rid of Header
-                // dataScanner.nextLine();
+                // boolean classFound = false;
+                // while (!classFound) {
+                //     System.out.println("Enter class name: ");
+                //     String className = sc.nextLine();
+                //     classIdx = Arrays.asList(headers).indexOf(className);
+                //     if (classIdx != -1) {
+                //         classFound = true;
+                //     }
+                // }
 
-                
+                // get rid of Header
+                dataScanner.nextLine();
+
                 while (dataScanner.hasNextLine()) {
                     String tempData = dataScanner.nextLine();
                     String[] tokens = tempData.split(",");
@@ -82,35 +85,27 @@ public class RG {
                     numColumns = tokens.length;
                     numTransactions = data.size() / numColumns;
                 }
+
                 dataScanner.close();
                 fileFound = true;
+                boolean classFound = false;
+                while (!classFound) {
+                    System.out.println("Enter column number of class (0 indexed) ");
+                    classColumn = sc.nextInt();
+                    if (classColumn < numColumns && classColumn > -1)
+                        classFound = true;
+                }
+
+                
             } catch (Exception e) {
                 System.out.println("File cannot be found");
             }
         }
-        // discretize the values in each column
-        // need to have copiedValues since discretizer.fit sorts the array
-        //FIXME: numColumns is the total number of columns including class column. Do we need to minus 1?
-        Double[][] values = new Double[numColumns][numTransactions];
-        Double[][] copiedValues = new Double[numColumns][numTransactions];
-        for (int i = 0; i < numColumns; i++) {
-            if (i != classIdx) {
-                for (int j = 0; j < numTransactions; j++) {
-                    values[i][j] = Double.parseDouble(data.get((j * numColumns) + i));
-                    copiedValues[i][j] = values[i][j];
-                }
-            }
-            //TODO: #3 the current discretizer is the EqualSizeDiscretizer, can look for other libraries or other 
-            // discretizers to implement a better algorithm
-            EqualSizeDiscretizer discretizer = new EqualSizeDiscretizer();
-            discretizer.fit(values[i]);
-            copiedValues[i] = discretizer.apply(copiedValues[i]);
-        }
-
+        var dataValues = fitDiscretizerToData(data, classColumn);
         // convert the data to be the bin so that they are all ranging from 0 to the max in each column
         for (int i = 1; i < numColumns; i++) {
             for (int j = 0; j < numTransactions; j++) {
-                data.set((j * numColumns) + i, String.valueOf(copiedValues[i][j]));
+                data.set((j * numColumns) + i, String.valueOf(dataValues[i][j]));
             }
         }
 
@@ -138,23 +133,47 @@ public class RG {
 
         numItems = (int) intData.stream().distinct().count();
         dataArray = intData;
-        convertToTransactionList();
+        convertToTransactionList(classColumn);
         sc.close();
     }
 
     //TODO #7
     public void generateFrequentItemsets() {
         createInitialItemsets();
+        generateAssocRulesFromItemsets();
+        pruneRules();
         int itemsetNumber = 1;
         while (itemsets.size() > 0) {
             System.out.println("Itemsets.size: " + itemsets.size());
-            calculateFrequentItemsets();
+            itemsets = calculateFrequentItemsets();
             if (itemsets.size() != 0) {
                 System.out.println("found " + itemsets.size() + " frequent itemsets of size " + itemsetNumber);
-                createNewItemsetsFromPrevious();
+                itemsets = (List<int[]>) createNewItemsetsFromPrevious();
             }
             itemsetNumber++;
         }
+    }
+
+    private Double[][] fitDiscretizerToData(ArrayList<String> data, int classColumn) {
+        // discretize the values in each column
+        // need to have copiedValues since discretizer.fit sorts the array
+        Double[][] values = new Double[numColumns][numTransactions];
+        Double[][] copiedValues = new Double[numColumns][numTransactions];
+        for (int i = 0; i < numColumns; i++) {
+            if (i != classColumn) {
+                for (int j = 0; j < numTransactions; j++) {
+                    values[i][j] = Double.parseDouble(data.get((j * numColumns) + i));
+                    copiedValues[i][j] = values[i][j];
+                }
+            //TODO: #3 the current discretizer is the EqualSizeDiscretizer, can look for other libraries or other 
+            // discretizers to implement a better algorithm
+            // System.out.println(values[i][0]);
+            EqualSizeDiscretizer discretizer = new EqualSizeDiscretizer();
+            discretizer.fit(values[i]);
+            copiedValues[i] = discretizer.apply(copiedValues[i]);
+            }
+        }
+        return copiedValues;
     }
 
 
@@ -174,49 +193,51 @@ public class RG {
     }
 
 
-    private void createNewItemsetsFromPrevious() {
+    //FIXME
+    private Collection<int[]> createNewItemsetsFromPrevious() {
         // get the number of items in the current candidate itemset
         int currentItemsetSize = itemsets.get(0).length;
         System.out.println("generating frequent candidate frequent itemsets of size " + (currentItemsetSize + 1) );
-
         HashMap<String, int[]> freqCandidates = new HashMap<>();
-
         for (int i = 0; i < itemsets.size(); i++) {
-            for (int[] itemset : itemsets) {
-                var X = itemsets.get(i);
+            for (int j = 0; j < itemsets.size(); j++) {
+                if (j != i) {
+                    var X = itemsets.get(i);
+                    // using array X as the base, we make the first n - 1 elements of the next itemset
+                    // the elements of X
+                    // int[] newCand = Arrays.copyOf(X, X.length);
+                    int[] newCand = new int[X.length + 1];
+                    for (int k = 0; k < X.length; k++) {
+                        newCand[k] = X[k];
+                    }
+                    // we would then want to check for elements in the frequent n - 1 itemsets that are also frequent
+                    // but which has an element not in x
 
-                // using array X as the base, we make the first n - 1 elements of the next itemset
-                // the elements of X
-                int[] newCand = Arrays.copyOf(X, X.length);
-
-                // we would then want to check for elements in the frequent n - 1 itemsets that are also frequent
-                // but which has an element not in x
-                int nDifferent = 0;
-                for (int j : itemset) {
+                    int nDifferent = 0;
                     boolean found = false;
-
-                    for (int x : X) {
-                        if (x == j) {
-                            found = true;
-                            break;
+                    for (int item : itemsets.get(j)) {
+                        for (int x : X) {
+                            if (x == item) {
+                                break;
+                            } 
+                            if (!found) {
+                                nDifferent++;
+                                var difference = item;
+                            }
+                        }
+                        // if there is such an element
+                        // we add this to the last position of the new candidate itemset
+                        if (nDifferent == 1) {
+                            newCand[newCand.length - 1] = item;
+                            freqCandidates.put(Arrays.toString(newCand), newCand);
                         }
                     }
-                    // if there is such an element
-                    // we add this to the last position of the new candidate itemset
-                    if (!found) {
-                        nDifferent++;
-                        newCand[newCand.length - 1] = j;
-                    }
-                }
-                // add this new frequent itemeset of length n
-                // and put it into the freqCandidates list
-                if (nDifferent == 1) {
-                    Arrays.sort(newCand);
-                    freqCandidates.put(Arrays.toString(newCand), newCand);
-                }
+                    // add this new frequent itemeset of length n
+                    // and put it into the freqCandidates list
             }
         }
-        itemsets = new ArrayList<>(freqCandidates.values());
+    }
+        return new ArrayList<int[]>(freqCandidates.values());
     }
 
 
@@ -230,14 +251,14 @@ public class RG {
         }
     }
 
-    private void convertToTransactionList() {
+    private void convertToTransactionList(int classColumn) {
 
         transactionList = new Transaction[numTransactions];
         for (int i = 0; i < numTransactions; i++) {
             int transactionClass = 0;
             int[] transactionItems = new int[numColumns - 1];
             for (int j = 0; j < numColumns; j++) {
-                if (j == 0) {
+                if (j == classColumn) {
                     transactionClass = dataArray.get((i * numColumns) + j);
                 } else {
                     transactionItems[j - 1] = dataArray.get((i * numColumns) + j);
@@ -248,9 +269,10 @@ public class RG {
         }
     }
 
-    private void calculateFrequentItemsets() {
+    private List<int[]> calculateFrequentItemsets() {
+        var size = itemsets.get(0).length;
 
-        System.out.println("Calculating frequent itemsets to compute the frequency of " + itemsets.size() + " itemsets");
+        System.out.println("Calculating frequent itemsets to compute the frequency of itemsets of size " + size);
         List<int[]> frequentCandidates = new ArrayList<>();
 
         // count support for each itemset 
@@ -262,7 +284,7 @@ public class RG {
             }
         }
         // monotonicity
-        itemsets = frequentCandidates;
+        return frequentCandidates;
     }
 
 
@@ -291,7 +313,7 @@ public class RG {
         return count / (double) (numTransactions);
     }
 
-    private void pruneRules() {
+    public void pruneRules() {
         // prune the rules in the current Rule Array 
         ArrayList<Rule> currRuleArray = getRuleArray();
         for (Rule rule : currRuleArray) {

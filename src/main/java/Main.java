@@ -3,6 +3,11 @@ public class Main {
         RG rg = new RG();
         rg.start();
         rg.generateFrequentItemsets();
+        Classifier classifier = new Classifier();
+        classifier.start();
+        classifier.findCRuleAndWRule();
+        classifier.goThroughDataAgain();
+        classifier.chooseFinalRules();
     }
 
 }

@@ -41,12 +41,12 @@ public class Classifier{
     //     }
     // }
 
-    public void start() {
+    private void start() {
         sortedRuleArray = RG.getRuleArray();
         Collections.sort(sortedRuleArray);
     }
     // CBA-CB M2 Stage 1
-    public void findCRuleAndWRule() {
+    private void findCRuleAndWRule() {
         var transactionList = RG.getTransactionList();
         for (Transaction transaction : transactionList) {
             var transactionItems = transaction.getTransactionItems();
@@ -89,7 +89,7 @@ public class Classifier{
     }
 
     // CBA-CB: M2 (Stage 2)
-    public void goThroughDataAgain() {
+    private void goThroughDataAgain() {
         for (SpecialTransaction trans : setOfSpecialTransactions) {
             if (trans.getWRule().getCoveredCasesCorrectly()) {
                 trans.getCRule().removeClassCasesCovered(trans.getTransactionClass());
@@ -145,7 +145,7 @@ public class Classifier{
     }
 
     // stage 3
-    public void chooseFinalRules() {
+    private void chooseFinalRules() {
         var transactionList = RG.getTransactionList();
         var classDistr = compClassDistri(transactionList);
         int ruleErrors = 0;
@@ -164,6 +164,15 @@ public class Classifier{
                     } else {
                         //FIXME #10
                         replaceRule.getCRule().removeClassCasesCovered(replaceRule.getTransactionClass());
+                        Rule tempRule = replaceRule.getCRule();
+                        // change set for which rule has to be edited if necessary
+                        for (Rule rule1 : setOfCRulesWithHigherPrecedence){
+                            if (rule1 == tempRule) {
+                                rule1.removeClassCasesCovered(replaceRule.getTransactionClass());
+                            }
+
+                        }
+
                     }
                 }
                 ruleErrors += rule.errorsOfRule();
@@ -182,8 +191,8 @@ public class Classifier{
             if (classifierRules.get(i).getTotalError() < min) {
                 min = classifierRules.get(i).getTotalError();
             } else {
-                lastClass = i - 1;
                 break;
+                lastClass = i - 1;
             }
         }
 
@@ -194,6 +203,8 @@ public class Classifier{
         for (int j = 0; j <= lastClass; j++) {
             finalClassifier.add(classifierRules.get(j).getRule());
         }
+        
+
     }
 
     // count the number of training cases in each class

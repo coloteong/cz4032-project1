@@ -307,6 +307,7 @@ public class RG {
     public void pruneRules() {
         // prune the rules in the current Rule Array 
         ArrayList<Rule> currRuleArray = getRuleArray();
+        System.out.println(currRuleArray.size());
         HashMap<Rule, Float> ruleError = new HashMap<>();
         for (Rule rule : currRuleArray) {
             System.out.println(rule.getRuleID());
@@ -335,6 +336,9 @@ public class RG {
                         currRuleArray.remove(rule);
                     }
                 }
+            }
+            else {
+                break;
             }
         }
     }

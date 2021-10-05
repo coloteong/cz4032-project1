@@ -307,6 +307,7 @@ public class RG {
     public void pruneRules() {
         // prune the rules in the current Rule Array 
         ArrayList<Rule> currRuleArray = getRuleArray();
+        HashMap<Rule, Float> ruleError = new HashMap<Rule, Float>();
         for (Rule rule : currRuleArray) {
             var itemsInLHS = rule.getAntecedent().length;
             // we can only have an R^minus if the number of items on the LHS
@@ -325,8 +326,13 @@ public class RG {
                             j--;
                     }
                     Rule rMinus = new Rule(newAntecedent, rule.getConsequent());
-                    if (countPessimisticError(rule) > countPessimisticError(rMinus))
+                    if (!ruleError.containsKey(rMinus)) {
+                        ruleError.put(rMinus, (float) countPessimisticError(rMinus));
+                    }
+                    var rMinusError = ruleError.get(rMinus);
+                    if (countPessimisticError(rule) > rMinusError) {
                         currRuleArray.remove(rule);
+                    }
                 }
             }
         }

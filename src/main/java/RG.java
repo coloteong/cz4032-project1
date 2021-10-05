@@ -306,9 +306,25 @@ public class RG {
 
     public void pruneRules() {
         // prune the rules in the current Rule Array 
-        ArrayList<Rule> currRuleArray = getRuleArray();
+        ArrayList<Rule> ruleArray = getRuleArray();
+        var lastRuleSize = ruleArray.get(ruleArray.size() - 1).getAntecedent().length;
+        var start = 0;
+        
+        //TODO #15 
+        for (int i = 0; i < ruleArray.size(); i++) {
+            if (ruleArray.get(i).getAntecedent().length == lastRuleSize) {
+                start = i;
+                break;
+            }
+        }
+        ArrayList<Rule> currRuleArray = new ArrayList<>();
+
+        for (int i = start; i < ruleArray.size(); i++) {
+            currRuleArray.add(ruleArray.get(i));
+        }
+
         System.out.println(currRuleArray.size());
-        HashMap<Rule, Float> ruleError = new HashMap<>();
+        // HashMap<Rule, Float> ruleError = new HashMap<>();
         for (Rule rule : currRuleArray) {
             System.out.println(rule.getRuleID());
             var itemsInLHS = rule.getAntecedent().length;
@@ -328,11 +344,11 @@ public class RG {
                             j--;
                     }
                     Rule rMinus = new Rule(newAntecedent, rule.getConsequent());
-                    if (!ruleError.containsKey(rMinus)) {
-                        ruleError.put(rMinus, (float) countPessimisticError(rMinus));
-                    }
-                    var rMinusError = ruleError.get(rMinus);
-                    if (countPessimisticError(rule) > rMinusError) {
+                    // if (!ruleError.containsKey(rMinus)) {
+                    //     ruleError.put(rMinus, (float) countPessimisticError(rMinus));
+                    // }
+                    // var rMinusError = ruleError.get(rMinus);
+                    if (countPessimisticError(rule) > countPessimisticError(rMinus)) {
                         currRuleArray.remove(rule);
                     }
                 }

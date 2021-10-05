@@ -41,12 +41,12 @@ public class Classifier{
     //     }
     // }
 
-    private void start() {
+    public void start() {
         sortedRuleArray = RG.getRuleArray();
         Collections.sort(sortedRuleArray);
     }
     // CBA-CB M2 Stage 1
-    private void findCRuleAndWRule() {
+    public void findCRuleAndWRule() {
         var transactionList = RG.getTransactionList();
         for (Transaction transaction : transactionList) {
             var transactionItems = transaction.getTransactionItems();
@@ -89,7 +89,7 @@ public class Classifier{
     }
 
     // CBA-CB: M2 (Stage 2)
-    private void goThroughDataAgain() {
+    public void goThroughDataAgain() {
         for (SpecialTransaction trans : setOfSpecialTransactions) {
             if (trans.getWRule().getCoveredCasesCorrectly()) {
                 trans.getCRule().removeClassCasesCovered(trans.getTransactionClass());
@@ -145,7 +145,7 @@ public class Classifier{
     }
 
     // stage 3
-    private void chooseFinalRules() {
+    public void chooseFinalRules() {
         var transactionList = RG.getTransactionList();
         var classDistr = compClassDistri(transactionList);
         int ruleErrors = 0;

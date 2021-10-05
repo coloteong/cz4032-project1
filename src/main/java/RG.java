@@ -3,19 +3,17 @@ import org.apache.commons.lang3.*;
 import java.io.*;
 import java.util.*;
 
-import javax.sound.midi.Soundbank;
-
 public class RG {
 
     // list of the current itemsets
-    private List<int[]> itemsets;
+    private List<Itemset> itemsets;
     // the number of itemsets
     private int numItems;
     // the number of columns in the data
     private int numColumns;
     // the number of transactions in the source file
     private static int numTransactions;
-    private double minSup = 0.01;
+    private double minSup = 0.10;
     // path to the data file
     private String dataDir;
     // min confidence for all the itemsets
@@ -25,9 +23,6 @@ public class RG {
     public ArrayList<Integer> dataArray;
     // stores all the rules
     private static ArrayList<Rule> ruleArray = new ArrayList<>();
-
-    // We might need this for... im not sure
-    // private final int NUMCLASSES = 3;
 
     //TODO #8
 
@@ -144,7 +139,7 @@ public class RG {
             System.out.println("Frequent Itemset size: " + itemsets.size());
             if (!itemsets.isEmpty()) {
                 System.out.println("found " + itemsets.size() + " frequent itemsets of size " + itemsetNumber);
-                itemsets = (List<int[]>) createNewItemsetsFromPrevious();
+                itemsets =  createNewItemsetsFromPrevious();
             }
             generateAssocRulesFromItemsets();
             System.out.println("Size of ruleArray: " + ruleArray.size());
@@ -195,18 +190,18 @@ public class RG {
 
 
     //FIXME
-    private Collection<int[]> createNewItemsetsFromPrevious() {
+    private ArrayList<Itemset> createNewItemsetsFromPrevious() {
         // get the number of items in the current candidate itemset
-        int currentItemsetSize = itemsets.get(0).length;
+        int currentItemsetSize = itemsets.get(0).getItems().length;
         System.out.println("generating frequent candidate frequent itemsets of size " + (currentItemsetSize + 1) );
-        HashMap<String, int[]> freqCandidates = new HashMap<>();
+        // HashMap<String, int[]> freqCandidates = new HashMap<>();
+        ArrayList<Itemset> freqCandidates = new ArrayList<>();
         for (int i = 0; i < itemsets.size(); i++) {
             for (int j = 0; j < itemsets.size(); j++) {
                 if (j != i) {
-                    var X = itemsets.get(i);
+                    var X = itemsets.get(i).getItems();
                     // using array X as the base, we make the first n - 1 elements of the next itemset
                     // the elements of X
-                    // int[] newCand = Arrays.copyOf(X, X.length);
                     int[] newCand = new int[X.length + 1];
                     for (int k = 0; k < X.length; k++) {
                         newCand[k] = X[k];
@@ -216,7 +211,7 @@ public class RG {
 
                     int nDifferent = 0;
                     boolean found = false;
-                    for (int item : itemsets.get(j)) {
+                    for (int item : itemsets.get(j).getItems()) {
                         for (int x : X) {
                             if (x == item) {
                                 break;
@@ -230,7 +225,8 @@ public class RG {
                         // we add this to the last position of the new candidate itemset
                         if (nDifferent == 1) {
                             newCand[newCand.length - 1] = item;
-                            freqCandidates.put(Arrays.toString(newCand), newCand);
+                            Itemset newCandidateItemset = new Itemset(newCand);
+                            freqCandidates.add(newCandidateItemset);
                         }
                     }
                     // add this new frequent itemeset of length n
@@ -238,17 +234,17 @@ public class RG {
             }
         }
     }
-        return new ArrayList<int[]>(freqCandidates.values());
+    return freqCandidates;
     }
 
 
     public void createInitialItemsets() {
         // itemsets will be an int of all the items
-
         itemsets = new ArrayList<>();
         for (int i = 0; i < numItems; i++) {
             int[] cand = {i + 1};
-            itemsets.add(cand);
+            Itemset itemset = new Itemset(cand);
+            itemsets.add(itemset);
         }
     }
 
@@ -270,21 +266,15 @@ public class RG {
         }
     }
 
-    private List<int[]> calculateFrequentItemsets() {
-        var size = itemsets.get(0).length;
+    private List<Itemset> calculateFrequentItemsets() {
+        var size = itemsets.get(0).getItems().length;
 
         System.out.println("Calculating frequent itemsets to compute the frequency of itemsets of size " + size);
-        List<int[]> frequentCandidates = new ArrayList<>();
-
-        // count support for each itemset 
-        for (int i = 0; i < itemsets.size(); i++) {
-            // add to the frequent candidates
-            double support = countSupport(itemsets.get(i));
-            if (support >= minSup) {
-                frequentCandidates.add(itemsets.get(i));
-            }
+        List<Itemset> frequentCandidates = new ArrayList<>();
+        for (Itemset itemset : itemsets) {  
+            if (itemset.getSupport() >= minSup) 
+                frequentCandidates.add(itemset);
         }
-        // monotonicity
         return frequentCandidates;
     }
 

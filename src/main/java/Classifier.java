@@ -6,13 +6,13 @@ import org.apache.commons.lang3.*;
 
 public class Classifier{
     //TODO #2 implement the classifier class - at least init with attribute
-    private ArrayList<Rule> sortedRuleArray;
+    private ArrayList<Rule> sortedRuleArray = new ArrayList<>();
     // this is set U in the paper
-    private List<Rule> setOfCRules;
+    private List<Rule> setOfCRules = new ArrayList<>();
     // this is set Q in the paper
-    private List<Rule> setOfCRulesWithHigherPrecedence;
+    private List<Rule> setOfCRulesWithHigherPrecedence = new ArrayList<>();
     // this is set A in the paper
-    private List<SpecialTransaction> setOfSpecialTransactions;
+    private List<SpecialTransaction> setOfSpecialTransactions = new ArrayList<>();
     private ArrayList<Transaction> coveredTransaction = new ArrayList<>();
     // this is set C in the paper
     private ArrayList<ClassificationRule> classifierRules = new ArrayList<>();

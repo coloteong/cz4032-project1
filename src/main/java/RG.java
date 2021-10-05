@@ -13,7 +13,7 @@ public class RG {
     private int numColumns;
     // the number of transactions in the source file
     private static int numTransactions;
-    private double minSup = 0.03;
+    private double minSup = 0.02;
     // path to the data file
     private String dataDir;
     // min confidence for all the itemsets
@@ -131,7 +131,7 @@ public class RG {
     public void generateFrequentItemsets() {
         createInitialItemsets();
         generateAssocRulesFromItemsets();
-        pruneRules();
+        // pruneRules();
         int itemsetNumber = 1;
         while (!itemsets.isEmpty()) {
             System.out.println("Itemsets.size: " + itemsets.size());
@@ -141,11 +141,12 @@ public class RG {
                 System.out.println("found " + itemsets.size() + " frequent itemsets of size " + itemsetNumber);
                 itemsets =  createNewItemsetsFromPrevious();
             }
+            System.out.println("Created the new itemsets; generating asssoc rules now");
             generateAssocRulesFromItemsets();
             System.out.println("Size of ruleArray: " + ruleArray.size());
             // TODO: #13 pruneRules takes too long
-            pruneRules();
-            System.out.println("Size of ruleArray: " + ruleArray.size());
+            // pruneRules();
+            System.out.println("Size of ruleArray after pruning: " + ruleArray.size());
             itemsetNumber++;
         }
     }
@@ -189,7 +190,7 @@ public class RG {
     }
 
 
-    //FIXME
+    // FIXME #16
     private ArrayList<Itemset> createNewItemsetsFromPrevious() {
         // get the number of items in the current candidate itemset
         int currentItemsetSize = itemsets.get(0).getItems().length;
@@ -306,26 +307,26 @@ public class RG {
 
     public void pruneRules() {
         // prune the rules in the current Rule Array 
-        ArrayList<Rule> ruleArray = getRuleArray();
         var lastRuleSize = ruleArray.get(ruleArray.size() - 1).getAntecedent().length;
         var start = 0;
         
         //TODO #15 
-        for (int i = 0; i < ruleArray.size(); i++) {
-            if (ruleArray.get(i).getAntecedent().length == lastRuleSize) {
-                start = i;
-                break;
-            }
-        }
-        ArrayList<Rule> currRuleArray = new ArrayList<>();
+        // for (int i = 0; i < ruleArray.size(); i++) {
+        //     if (ruleArray.get(i).getAntecedent().length == lastRuleSize) {
+        //         start = i;
+        //         break;
+        //     }
+        // }
+        // ArrayList<Rule> currRuleArray = new ArrayList<>();
+        // for (int i = start; i < ruleArray.size(); i++) {
+        //     currRuleArray.add(ruleArray.get(i));
+        // }
 
-        for (int i = start; i < ruleArray.size(); i++) {
-            currRuleArray.add(ruleArray.get(i));
-        }
-
-        System.out.println(currRuleArray.size());
+        // System.out.println(currRuleArray.size());
         // HashMap<Rule, Float> ruleError = new HashMap<>();
-        for (Rule rule : currRuleArray) {
+        for (int k = start; k < ruleArray.size(); k++) {
+        // for (Rule rule : currRuleArray) {
+            var rule = ruleArray.get(k);
             System.out.println(rule.getRuleID());
             var itemsInLHS = rule.getAntecedent().length;
             // we can only have an R^minus if the number of items on the LHS
@@ -349,7 +350,7 @@ public class RG {
                     // }
                     // var rMinusError = ruleError.get(rMinus);
                     if (countPessimisticError(rule) > countPessimisticError(rMinus)) {
-                        currRuleArray.remove(rule);
+                        ruleArray.remove(rule);
                     }
                 }
             }
@@ -386,7 +387,7 @@ public class RG {
             }
         }
         double trainingError = numWrongTransactions / numApplicableTransactions;
-        double pessimisticError = (numWrongTransactions + (rule.getAntecedent().length * 2)) / (double) numApplicableTransactions;
+        double pessimisticError = (numWrongTransactions + (rule.getAntecedent().length * 3)) / (double) numApplicableTransactions;
         return pessimisticError;
     }
 

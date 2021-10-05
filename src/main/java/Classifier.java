@@ -191,8 +191,8 @@ public class Classifier{
             if (classifierRules.get(i).getTotalError() < min) {
                 min = classifierRules.get(i).getTotalError();
             } else {
-                break;
                 lastClass = i - 1;
+                break;
             }
         }
 

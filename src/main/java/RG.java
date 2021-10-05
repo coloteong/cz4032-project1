@@ -13,7 +13,7 @@ public class RG {
     private int numColumns;
     // the number of transactions in the source file
     private static int numTransactions;
-    private double minSup = 0.10;
+    private double minSup = 0.03;
     // path to the data file
     private String dataDir;
     // min confidence for all the itemsets
@@ -176,10 +176,10 @@ public class RG {
     public void generateAssocRulesFromItemsets() {
         // for each itemset, we get a rule
         // let's use variant 2 of mining association rules from the lecture notes
-        for (int[] itemset : itemsets) {
-            int rightHandSide = itemset[0];
+        for (Itemset itemset : itemsets) {
+            int rightHandSide = itemset.getItems()[0];
             // everything else is in the antecedent
-            var leftHandSide = Arrays.copyOfRange(itemset, 1, itemset.length);
+            var leftHandSide = Arrays.copyOfRange(itemset.getItems(), 1, itemset.getItems().length);
             Rule newRule = new Rule(leftHandSide, rightHandSide);
             // for this rule, we check if it is above the min confidence
             if (newRule.getConfidence() > minConf) {
@@ -307,8 +307,9 @@ public class RG {
     public void pruneRules() {
         // prune the rules in the current Rule Array 
         ArrayList<Rule> currRuleArray = getRuleArray();
-        HashMap<Rule, Float> ruleError = new HashMap<Rule, Float>();
+        HashMap<Rule, Float> ruleError = new HashMap<>();
         for (Rule rule : currRuleArray) {
+            System.out.println(rule.getRuleID());
             var itemsInLHS = rule.getAntecedent().length;
             // we can only have an R^minus if the number of items on the LHS
             // is more than 1

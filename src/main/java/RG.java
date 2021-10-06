@@ -34,6 +34,10 @@ public class RG {
         return transactionList;
     }
 
+    public List<Itemset> getItemsets() {
+        return itemsets;
+    }
+
 
     public void start() {
         ArrayList<String> data = new ArrayList<>();
@@ -135,7 +139,7 @@ public class RG {
             generateAssocRulesFromItemsets();
             System.out.println("Size of ruleArray: " + ruleArray.size());
             // TODO: #13 pruneRules takes too long
-            // pruneRules();
+            pruneRules();
             System.out.println("Size of ruleArray after pruning: " + ruleArray.size());
             itemsetNumber++;
         }
@@ -179,6 +183,18 @@ public class RG {
         }
     }
 
+
+    private void ruleSubset() {
+
+    }
+
+    private void candidateGen() {
+
+    }
+    
+    private void genRules() {
+
+    }
 
     // FIXME #16
     private ArrayList<Itemset> createNewItemsetsFromPrevious() {
@@ -377,7 +393,7 @@ public class RG {
             }
         }
         double trainingError = numWrongTransactions / numApplicableTransactions;
-        double pessimisticError = (numWrongTransactions + (rule.getAntecedent().length * 3)) / (double) numApplicableTransactions;
+        double pessimisticError = (numWrongTransactions + (rule.getAntecedent().length * 2)) / (double) numApplicableTransactions;
         return pessimisticError;
     }
 

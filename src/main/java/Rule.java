@@ -9,6 +9,8 @@ public class Rule implements Comparable<Rule>{
     private int consequent;
     private double confidence;
     private double support;
+    private int ruleSupport;
+    private int condSupport;
     // needed in CBA-CB M2
     private HashMap<Integer, Integer> classCasesCovered = new HashMap<>();
     private boolean coveredCasesCorrectly;
@@ -118,6 +120,13 @@ public class Rule implements Comparable<Rule>{
         return -1;
     }
 
+    public void incrementRuleSup() {
+        ruleSupport++;
+    }
+
+    public void incrementCondSup() {
+        condSupport++;
+    }
 
 }
 

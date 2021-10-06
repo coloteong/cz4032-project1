@@ -1,11 +1,8 @@
-import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.stream.IntStream;
 import org.apache.commons.lang3.*;
 
 public class Classifier{
-    //TODO #2 implement the classifier class - at least init with attribute
     private ArrayList<Rule> sortedRuleArray = new ArrayList<>();
     // this is set U in the paper
     private List<Rule> setOfCRules = new ArrayList<>();
@@ -20,27 +17,6 @@ public class Classifier{
     private int finalDefaultClass;
 
 
-
-    // public Rule comparePrecedence(Rule r1, Rule r2) {
-    //     // 1. comparing confidence
-    //     if (r1.getConfidence() > r2.getConfidence()) { return r1;}
-    //     else if (r2.getConfidence() > r1.getConfidence()) { return r2; }
-    //     // 2. comparing support
-    //     else if (r1.getSupport() > r2.getSupport()) { return r1; } 
-    //     else if (r2.getSupport() > r1.getSupport()) { return r2; }
-    //     // 3. comparing which was generated first
-    //     //FIXME #5
-    //     else if (ArrayUtils.indexOf(RG.getRuleArray(), r1) < ArrayUtils.indexOf(RG.getRuleArray(), r2)) { return r1; }
-    //     else { return r2; }
-    // }
-
-    // private void sortRules() {
-    //     for (int i = 0; i < RG.getRuleArray().length - 1; i++){
-    //         new Rule betterRule = comparePrecedence(ruleArray., r2);
-
-    //     }
-    // }
-
     public void start() {
         sortedRuleArray = RG.getRuleArray();
         Collections.sort(sortedRuleArray);
@@ -50,7 +26,9 @@ public class Classifier{
         var transactionList = RG.getTransactionList();
         for (Transaction transaction : transactionList) {
             var transactionItems = transaction.getTransactionItems();
-            if (!(transaction.getCRule() != null && transaction.getWRule() != null)) {
+            var hasCRule = false;
+            var hasWRule = false;
+            // if (transaction.getCRule() == null || transaction.getWRule() == null) {
                 for (Rule rule : sortedRuleArray) {
                     var ruleLHS = rule.getAntecedent();
                     var match = true;
@@ -61,23 +39,24 @@ public class Classifier{
                     }
                     if (match) {
                         if (rule.getConsequent() == transaction.getTransactionClass()) {
-                            if(transaction.getCRule() == null) {
+                            if(!hasCRule) {
                                 transaction.setCRule(rule);
                                 setOfCRules.add(rule);
                                 rule.addClassCasesCovered(transaction.getTransactionClass());
+                                hasCRule = true;
                             }
                         } else {
-                            if(transaction.getWRule() == null) {
+                            if(!hasWRule) {
                             transaction.setWRule(rule);
+                            hasWRule = true;
                             }
                         }
                     }
                 }
-            }
-            // if cRule > wRule, need to keep a data structure containing:
-            // transactionID, transactionClass, cRule, and wRule
+            //} 
             if (sortedRuleArray.indexOf(transaction.getCRule()) < sortedRuleArray.indexOf(transaction.getWRule())) {
                 // need to mark CRule
+                System.out.println(setOfCRulesWithHigherPrecedence);
                 setOfCRulesWithHigherPrecedence.add(transaction.getCRule());
                 transaction.getCRule().markRule();
 
@@ -85,6 +64,8 @@ public class Classifier{
                 SpecialTransaction specialTransaction = new SpecialTransaction(transaction.getTransactionID(), transaction.getTransactionClass(), transaction.getCRule(), transaction.getWRule());
                 setOfSpecialTransactions.add(specialTransaction);
             }
+            // if cRule > wRule, need to keep a data structure containing:
+            // transactionID, transactionClass, cRule, and wRule
         }
     }
 

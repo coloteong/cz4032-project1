@@ -10,7 +10,7 @@ public class Rule implements Comparable<Rule>{
     private double confidence;
     private double support;
     // needed in CBA-CB M2
-    private HashMap<Integer, Integer> classCasesCovered;
+    private HashMap<Integer, Integer> classCasesCovered = new HashMap<>();
     private boolean coveredCasesCorrectly;
     private ArrayList<SpecialRule> replace = new ArrayList<>();
     private static int count = 0;

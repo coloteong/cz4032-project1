@@ -13,7 +13,7 @@ public class RG {
     private int numColumns;
     // the number of transactions in the source file
     private static int numTransactions;
-    private double minSup = 0.02;
+    private double minSup = 0.06;
     // path to the data file
     private String dataDir;
     // min confidence for all the itemsets
@@ -54,16 +54,6 @@ public class RG {
                 String headerRow = dataScanner.nextLine();
                 String[] headers = headerRow.split(",");
                 System.out.println(headerRow);
-
-                // boolean classFound = false;
-                // while (!classFound) {
-                //     System.out.println("Enter class name: ");
-                //     String className = sc.nextLine();
-                //     classIdx = Arrays.asList(headers).indexOf(className);
-                //     if (classIdx != -1) {
-                //         classFound = true;
-                //     }
-                // }
 
                 // get rid of Header
                 dataScanner.nextLine();

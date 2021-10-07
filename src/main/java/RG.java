@@ -1,4 +1,5 @@
 import de.viadee.discretizers4j.impl.EqualSizeDiscretizer;
+
 import org.apache.commons.lang3.*;
 import java.io.*;
 import java.util.*;
@@ -23,6 +24,7 @@ public class RG {
     public ArrayList<Integer> dataArray;
     // stores all the rules
     private static ArrayList<Rule> ruleArray = new ArrayList<>();
+    // stores all the possible classes in the data
 
     //TODO #8
 
@@ -124,12 +126,16 @@ public class RG {
     private void createInitialRuleItems() {
         // generate all the rule items with one item on the antecedent
         // which is also frequent
+        Set<Integer> itemSet = new HashSet<Integer>();
+        for (Transaction transaction : transactionList) {
+            int[] transactionItems = transaction.getTransactionItems();
+        }
     }
 
     public void getRulesfromItemsets() {
         createInitialRuleItems();
         while (itemsets.size() > 0) {
-            ruleArray = candidateGen();
+            // ruleArray = candidateGen();
             // lines 6 to 10
             for ( Transaction transaction : transactionList) {
                 var cD = ruleSubset(ruleArray, transaction);
@@ -353,20 +359,6 @@ public class RG {
         var lastRuleSize = ruleArray.get(ruleArray.size() - 1).getAntecedent().length;
         var start = 0;
         
-        //TODO #15 
-        // for (int i = 0; i < ruleArray.size(); i++) {
-        //     if (ruleArray.get(i).getAntecedent().length == lastRuleSize) {
-        //         start = i;
-        //         break;
-        //     }
-        // }
-        // ArrayList<Rule> currRuleArray = new ArrayList<>();
-        // for (int i = start; i < ruleArray.size(); i++) {
-        //     currRuleArray.add(ruleArray.get(i));
-        // }
-
-        // System.out.println(currRuleArray.size());
-        // HashMap<Rule, Float> ruleError = new HashMap<>();
         for (int k = start; k < ruleArray.size(); k++) {
         // for (Rule rule : currRuleArray) {
             var rule = ruleArray.get(k);

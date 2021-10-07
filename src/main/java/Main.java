@@ -2,13 +2,9 @@ public class Main {
     public static void main(String[] args) throws Exception {
         RG rg = new RG();
         rg.start();
-        rg.createInitialItemsets();
-        rg.genRules();
-        rg.pruneRules();
-
-        for (int i = 2; rg.getItemsets().size() != 0; i++) {
-            
-        }
+        // rg.createInitialItemsets();
+        // rg.genRules();
+        // rg.pruneRules();
 
         rg.generateFrequentItemsets();
         Classifier classifier = new Classifier();

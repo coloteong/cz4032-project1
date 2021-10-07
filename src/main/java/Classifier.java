@@ -38,6 +38,11 @@ public class Classifier{
                         }
                     }
                     if (match) {
+                        // System.out.print(rule.getConsequent());
+                        // System.out.print(", transaction class: ");
+                        // System.out.print(transaction.getTransactionClass());
+                        // System.out.print("\n");
+                        // System.out.print("rule consequent:"); 
                         if (rule.getConsequent() == transaction.getTransactionClass()) {
                             if(!hasCRule) {
                                 transaction.setCRule(rule);

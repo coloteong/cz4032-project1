@@ -17,5 +17,4 @@ public class Main {
         classifier.goThroughDataAgain();
         classifier.chooseFinalRules();
     }
-
 }

@@ -85,6 +85,7 @@ public class RG {
                 System.out.println("File cannot be found");
             }
         }
+        // TODO: JETHRO HELP how does class column get read into the data
         var dataValues = fitDiscretizerToData(data, classColumn);
         // convert the data to be the bin so that they are all ranging from 0 to the max in each column
         for (int i = 1; i < numColumns; i++) {
@@ -117,6 +118,10 @@ public class RG {
 
         numItems = (int) intData.stream().distinct().count();
         dataArray = intData;
+
+        for (int i = 0; i < intValues.length; i++) {
+            System.out.println(intValues[i].toString());
+        }
         convertToTransactionList(classColumn);
         sc.close();
     }
@@ -254,7 +259,9 @@ public class RG {
                     // but which has an element not in x
 
                     int nDifferent = 0;
-                    boolean found = false;
+                    boolean found = false;  
+                    //TODO: TIM DISCUSS is there a better way of doing this? maybe initialize a set containing all the values in all freq itemsets
+                    // then only need to make one pass through the set, instead of each item in every itemset (might be a lot of duplicates?) 
                     for (int item : itemsets.get(j).getItems()) {
                         for (int x : X) {
                             if (x == item) {
@@ -262,7 +269,7 @@ public class RG {
                             } 
                             if (!found) {
                                 nDifferent++;
-                                var difference = item;
+                                var difference = item;  // what is this for?
                             }
                         }
                         // if there is such an element
@@ -314,6 +321,8 @@ public class RG {
         var size = itemsets.get(0).getItems().length;
 
         System.out.println("Calculating frequent itemsets to compute the frequency of itemsets of size " + size);
+
+        // TODO: TIM DISCUSS is there a way of just removing bad items instead of creating a new List?
         List<Itemset> frequentCandidates = new ArrayList<>();
         for (Itemset itemset : itemsets) {  
             if (itemset.getSupport() >= minSup) 

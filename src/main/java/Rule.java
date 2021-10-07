@@ -72,12 +72,14 @@ public class Rule implements Comparable<Rule>{
     }
 
     public void addClassCasesCovered(int transactionClass) {
-            if (classCasesCovered.get(transactionClass) == null) {
-                classCasesCovered.put(transactionClass, 1);
-            } else {
-               var currNum = classCasesCovered.get(transactionClass);
-               classCasesCovered.put(transactionClass, currNum + 1);
-            }
+
+        // TODO: TIM DISCUSS: why is classCasesCovered a hashmap? shouldn't each rule only have one term in the consequent?
+        if (classCasesCovered.get(transactionClass) == null) {
+            classCasesCovered.put(transactionClass, 1);
+        } else {
+            var currNum = classCasesCovered.get(transactionClass);
+            classCasesCovered.put(transactionClass, currNum + 1);
+        }
     }
 
     public void removeClassCasesCovered(int transactionClass) {

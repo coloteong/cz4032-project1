@@ -16,116 +16,26 @@ public class RG {
     private static int numTransactions;
     private double minSup = 0.06;
     // path to the data file
-    private String dataDir;
-    // min confidence for all the itemsets
-    private double minConf;
     // the  2D array i.e. dataArray
     private static Transaction[] transactionList;
-    public ArrayList<Integer> dataArray;
     // stores all the rules
     private static ArrayList<Rule> ruleArray = new ArrayList<>();
     // stores all the possible classes in the data
 
-    //TODO #8
+    public void Rule(Transaction[] transactionList) {
+        this.transactionList = transactionList;
+    }
 
     public static ArrayList<Rule> getRuleArray() {
         return ruleArray;
-    }
-
-    public static Transaction[] getTransactionList() {
-        return transactionList;
     }
 
     public List<Itemset> getItemsets() {
         return itemsets;
     }
 
-
-    public void start() {
-        ArrayList<String> data = new ArrayList<>();
-        Scanner sc = new Scanner(System.in);
-        boolean fileFound = false;
-        /*
-        continually loop until a valid data file is read
-         */
-        var classColumn = 0;
-        while (!fileFound) {
-            try {
-                System.out.println("Type in directory to dataset (.data): ");
-                dataDir = sc.nextLine();
-                Scanner dataScanner = new Scanner(new File(dataDir));
-                dataScanner.useDelimiter(",");
-                System.out.println("Column names:");
-
-                String headerRow = dataScanner.nextLine();
-                String[] headers = headerRow.split(",");
-                System.out.println(headerRow);
-
-                // get rid of Header
-                dataScanner.nextLine();
-
-                while (dataScanner.hasNextLine()) {
-                    String tempData = dataScanner.nextLine();
-                    String[] tokens = tempData.split(",");
-                    data.addAll(List.of(tokens));
-                    numColumns = tokens.length;
-                    numTransactions = data.size() / numColumns;
-                }
-
-                dataScanner.close();
-                fileFound = true;
-                boolean classFound = false;
-                while (!classFound) {
-                    System.out.println("Enter column number of class (0 indexed) ");
-                    classColumn = sc.nextInt();
-                    if (classColumn < numColumns && classColumn > -1)
-                        classFound = true;
-                }
-
-                
-            } catch (Exception e) {
-                System.out.println("File cannot be found");
-            }
-        }
-        // TODO: JETHRO HELP how does class column get read into the data
-        var dataValues = fitDiscretizerToData(data, classColumn);
-        // convert the data to be the bin so that they are all ranging from 0 to the max in each column
-        for (int i = 1; i < numColumns; i++) {
-            for (int j = 0; j < numTransactions; j++) {
-                data.set((j * numColumns) + i, String.valueOf(dataValues[i][j]));
-            }
-        }
-
-        // make an Integer ArrayList
-        ArrayList<Integer> intData = new ArrayList<>();
-        for (String datum : data) {
-            intData.add((int) (Float.parseFloat(datum)));
-        }
-
-        // convert the values of the data and put it in a 2d array
-        Integer[][] intValues = new Integer[numColumns][numTransactions];
-        for (int i = 0; i < numColumns; i++) {
-            for (int j = 0; j < numTransactions; j++) {
-                intValues[i][j] = (intData.get((j * numColumns) + i)); }
-        }
-
-        int maxColVal = Collections.max(Arrays.asList(intValues[0]));
-        for (int i = 1; i < numColumns; i++) {
-            int maxBin = Collections.max(Arrays.asList(intValues[i]));
-            for (int j = 0; j < numTransactions; j++) {
-                intData.set((j * numColumns) + i, intValues[i][j] + maxColVal);
-            }
-            maxColVal += maxBin;
-        }
-
-        numItems = (int) intData.stream().distinct().count();
-        dataArray = intData;
-
-        for (int i = 0; i < intValues.length; i++) {
-            System.out.println(intValues[i].toString());
-        }
-        convertToTransactionList(classColumn);
-        sc.close();
+    public Transaction[] getTransactions() {
+        return transactionList;
     }
 
     private void createInitialRuleItems() {
@@ -211,6 +121,7 @@ public class RG {
             var leftHandSide = Arrays.copyOfRange(itemset.getItems(), 1, itemset.getItems().length);
             Rule newRule = new Rule(leftHandSide, rightHandSide);
             // for this rule, we check if it is above the min confidence
+            var minConf = 0.4;
             if (newRule.getConfidence() > minConf) {
                 ruleArray.add(newRule);
             }
@@ -265,9 +176,7 @@ public class RG {
                     // but which has an element not in x
 
                     int nDifferent = 0;
-                    boolean found = false;  
-                    //TODO: TIM DISCUSS is there a better way of doing this? maybe initialize a set containing all the values in all freq itemsets
-                    // then only need to make one pass through the set, instead of each item in every itemset (might be a lot of duplicates?) 
+                    boolean found = false;
                     for (int item : itemsets.get(j).getItems()) {
                         for (int x : X) {
                             if (x == item) {
@@ -275,7 +184,7 @@ public class RG {
                             } 
                             if (!found) {
                                 nDifferent++;
-                                var difference = item;  // what is this for?
+                                var difference = item;
                             }
                         }
                         // if there is such an element
@@ -327,8 +236,6 @@ public class RG {
         var size = itemsets.get(0).getItems().length;
 
         System.out.println("Calculating frequent itemsets to compute the frequency of itemsets of size " + size);
-
-        // TODO: TIM DISCUSS is there a way of just removing bad items instead of creating a new List?
         List<Itemset> frequentCandidates = new ArrayList<>();
         for (Itemset itemset : itemsets) {  
             if (itemset.getSupport() >= minSup) 

@@ -121,6 +121,27 @@ public class RG {
         sc.close();
     }
 
+    public void getRulesfromItemsets() {
+        createInitialItemsets();
+        itemsets = calculateFrequentItemsets();
+        itemsets = createNewItemsetsFromPrevious();
+        generateAssocRulesFromItemsets();
+        while (itemsets.size() > 0) {
+            ruleArray = candidateGen();
+            // lines 6 to 10
+            for ( Transaction transaction : transactionList) {
+                var cD = ruleSubset(ruleArray, transaction);
+                for (Rule rule : cD) {
+                    rule.incrementCondSup();
+                    if (rule.getConsequent() == transaction.getTransactionClass()) {
+                        rule.incrementRuleSup();
+                    }
+                }
+            }
+
+        }
+    }
+
     //TODO #7
     public void generateFrequentItemsets() {
         createInitialItemsets();
@@ -184,8 +205,22 @@ public class RG {
     }
 
 
-    private void ruleSubset() {
-
+    private ArrayList<Rule> ruleSubset(List<Rule> ruleSet, Transaction transaction) {
+        ArrayList<Rule> ruleArrayList = new ArrayList<>();
+        for (Rule rule : ruleArrayList) {
+            var ruleCondSet = rule.getAntecedent();
+            var supported = true;
+            for (int ruleItem : ruleCondSet) {
+                if (!ArrayUtils.contains(transaction.getTransactionItems(), ruleItem)) {
+                    supported = false;
+                    break;
+                }
+            }
+            if (supported) {
+                ruleArrayList.add(rule);
+            }
+        }
+        return ruleArrayList;
     }
 
     private void candidateGen() {

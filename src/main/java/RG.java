@@ -121,11 +121,13 @@ public class RG {
         sc.close();
     }
 
+    private void createInitialRuleItems() {
+        // generate all the rule items with one item on the antecedent
+        // which is also frequent
+    }
+
     public void getRulesfromItemsets() {
-        createInitialItemsets();
-        itemsets = calculateFrequentItemsets();
-        itemsets = createNewItemsetsFromPrevious();
-        generateAssocRulesFromItemsets();
+        createInitialRuleItems();
         while (itemsets.size() > 0) {
             ruleArray = candidateGen();
             // lines 6 to 10

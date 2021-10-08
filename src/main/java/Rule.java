@@ -15,15 +15,18 @@ public class Rule implements Comparable<Rule>{
     private ArrayList<SpecialRule> replace = new ArrayList<>();
     private static int count = 0;
 
-    public Rule(int[] antecedent) {
+    public Rule(int[] antecedent, int consequent) {
         this.antecedent = antecedent;
+        this.consequent = consequent;
         ruleID = count;
         count++;
     }
 
-    public Rule(int[] antecedent, int consequent) {
+    public Rule(int[] antecedent, int consequent, int condSup, int ruleSup) {
         this.antecedent = antecedent;
         this.consequent = consequent;
+        condSupportCount = condSup;
+        ruleSupportCount = ruleSup;
         ruleID = count;
         count++;
     }
@@ -45,12 +48,20 @@ public class Rule implements Comparable<Rule>{
         return ruleID;
     }
 
+    public int getRuleSupportCount() {
+        return ruleSupportCount;
+    }
+    
+    public int getCondSupportCount() {
+        return condSupportCount;
+    }
+
     public double getConfidence() {
-        return (double) ruleSupportCount / condSupportCount;
+        return ((double) ruleSupportCount / condSupportCount);
     }
     
     public double getSupport() {
-        return (double) ruleSupportCount / RG.numTransactions;
+        return ((double) ruleSupportCount / RG.numTransactions);
     }
 
     public int[] getAntecedent() {
@@ -123,12 +134,12 @@ public class Rule implements Comparable<Rule>{
         return -1;
     }
 
-    public void incrementRuleSup() {
-        ruleSupport++;
+    public void incrementRuleSupCount() {
+        ruleSupportCount++;
     }
 
-    public void incrementCondSup() {
-        condSupport++;
+    public void incrementCondSupCount() {
+        condSupportCount++;
     }
 
 }

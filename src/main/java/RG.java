@@ -9,30 +9,64 @@ public class RG {
     // the number of columns in the data
     private int numColumns;
     // the number of transactions in the source file
-    private static int numTransactions;
+    public static int numTransactions;
     public Transaction[] transactionList;
     private double minSup = 0.01;
-    private double minConf = 0.1;
+    private double minConf = 0.6;
     // stores all the rules
     private ArrayList<Rule> ruleArray = new ArrayList<>();
 
     public RG(Transaction[] transactionList) {
         this.transactionList = transactionList;
+        numTransactions = transactionList.length;
     }
 
     public void getRuleItems() {
-        ruleArray = createInitialRuleItems();
-        ruleArray = genRules();
-        // seems like our create initial rule items is already genRules
+        List<Rule> candidateRules;
+        List<Rule> currRuleArray;
+        // line 1
+        currRuleArray = createInitialRuleItems();
+        System.out.printf("Size of ruleArray at 1: ");
+        System.out.println(currRuleArray.size());
+        // line 2
+        currRuleArray = genRules(currRuleArray);
+        System.out.printf("Size of ruleArray at 2: ");
+        System.out.println(currRuleArray.size());
+        ruleArray.addAll(currRuleArray);
+        // skip pruning for large 1 itemset
+        while (!currRuleArray.isEmpty()) {
+            candidateRules = candidateGen(currRuleArray);
+            currRuleArray = new ArrayList<>();
+            for (Transaction transaction : transactionList) {
+                var cD = ruleSubset(candidateRules, transaction);
+                for (Rule rule : cD) {
+                    rule.incrementCondSupCount();
+                    if (transaction.getTransactionClass() == rule.getConsequent()) {
+                        rule.incrementRuleSupCount();
+                    }
+                }
+            }
 
+            for (Rule rule : candidateRules) {
+                if (rule.getRuleSupportCount() > minSup) {
+                    currRuleArray.add(rule);
+                }
+            }
+
+            currRuleArray = genRules(currRuleArray);
+
+            ruleArray.addAll(currRuleArray);
+            }
     }
 
     private ArrayList<Rule> createInitialRuleItems() {
         // generate all the rule items with one item on the antecedent
         // which is also frequent
-        ArrayList<Rule> currRuleArray = new ArrayList<>();
+        // ArrayList<Rule> currRuleArray = new ArrayList<>();
+        ArrayList<Rule> possibleRules = new ArrayList<>();
         Set<Integer> itemSet = new HashSet<>();
         Set<Integer> possibleClasses = new HashSet<>();
+
         for (Transaction transaction : transactionList) {
             possibleClasses.add(transaction.getTransactionClass());
             for (int item : transaction.getTransactionItems()) {
@@ -41,70 +75,79 @@ public class RG {
         }
 
         for (Integer item : itemSet) {
-            var i = 0;
-            int[] ruleItem = {item};
-            Rule initialRule = new Rule(ruleItem);
-
-            for (Integer ruleClass : possibleClasses) {
-                if (i == 0) {
-                    initialRule.setConsequent(ruleClass);
-                } else {
-                    Rule rule = new Rule(ruleItem, ruleClass);
-                    if (rule.getConfidence() > initialRule.getConfidence()) {
-                        initialRule = rule;
+            Map<Integer, Integer> classMap = new HashMap<>();
+            int[] ruleAntecedent = {item};
+            int numCond = 0;
+            for (Integer possibleClass : possibleClasses) {
+                numCond = 0;
+                var numClass = 0;
+                for (Transaction transaction : transactionList) {
+                    if (ArrayUtils.contains(transaction.getTransactionItems(), item)) {
+                        numCond++;
+                        if (possibleClass == transaction.getTransactionClass()) {
+                            numClass++;
+                        }
                     }
                 }
-                i++;
+                classMap.put(numClass, possibleClass);
             }
+            int max = Collections.max(classMap.keySet());
+            Rule rule = new Rule(ruleAntecedent, classMap.get(max), numCond, max);
 
-            if (initialRule.getSupport() > minSup) {
-                currRuleArray.add(initialRule);
+            System.out.printf("Antecedent:");
+            System.out.println(rule.getAntecedent()[0]);
+            System.out.printf("Consequent:");
+            System.out.println(rule.getConsequent());
+            System.out.printf("Support:");
+            System.out.println(rule.getSupport());
+
+            if (rule.getSupport() > minSup) {
+                possibleRules.add(rule);
             }
         }
-        System.out.println(currRuleArray.size());
-        return currRuleArray;
+        return possibleRules;
     }
 
 
-    //TODO #7
-    public void generateFrequentItemsets() {
-        createInitialItemsets();
-        generateAssocRulesFromItemsets();
-        // pruneRules();
-        int itemsetNumber = 1;
-        while (!itemsets.isEmpty()) {
-            System.out.println("Itemsets.size: " + itemsets.size());
-            itemsets = calculateFrequentItemsets();
-            System.out.println("Frequent Itemset size: " + itemsets.size());
-            if (!itemsets.isEmpty()) {
-                System.out.println("found " + itemsets.size() + " frequent itemsets of size " + itemsetNumber);
-                itemsets =  createNewItemsetsFromPrevious();
-            }
-            System.out.println("Created the new itemsets; generating asssoc rules now");
-            generateAssocRulesFromItemsets();
-            System.out.println("Size of ruleArray: " + ruleArray.size());
-            // TODO: #13 pruneRules takes too long
-            pruneRules();
-            System.out.println("Size of ruleArray after pruning: " + ruleArray.size());
-            itemsetNumber++;
-        }
-    }
+    // //TODO #7
+    // public void generateFrequentItemsets() {
+    //     createInitialItemsets();
+    //     generateAssocRulesFromItemsets();
+    //     // pruneRules();
+    //     int itemsetNumber = 1;
+    //     while (!itemsets.isEmpty()) {
+    //         System.out.println("Itemsets.size: " + itemsets.size());
+    //         itemsets = calculateFrequentItemsets();
+    //         System.out.println("Frequent Itemset size: " + itemsets.size());
+    //         if (!itemsets.isEmpty()) {
+    //             System.out.println("found " + itemsets.size() + " frequent itemsets of size " + itemsetNumber);
+    //             itemsets =  createNewItemsetsFromPrevious();
+    //         }
+    //         System.out.println("Created the new itemsets; generating asssoc rules now");
+    //         generateAssocRulesFromItemsets();
+    //         System.out.println("Size of ruleArray: " + ruleArray.size());
+    //         // TODO: #13 pruneRules takes too long
+    //         pruneRules();
+    //         System.out.println("Size of ruleArray after pruning: " + ruleArray.size());
+    //         itemsetNumber++;
+    //     }
+    // }
 
-    public void generateAssocRulesFromItemsets() {
-        // for each itemset, we get a rule
-        // let's use variant 2 of mining association rules from the lecture notes
-        for (Itemset itemset : itemsets) {
-            int rightHandSide = itemset.getItems()[0];
-            // everything else is in the antecedent
-            var leftHandSide = Arrays.copyOfRange(itemset.getItems(), 1, itemset.getItems().length);
-            Rule newRule = new Rule(leftHandSide, rightHandSide);
-            // for this rule, we check if it is above the min confidence
-            var minConf = 0.4;
-            if (newRule.getConfidence() > minConf) {
-                ruleArray.add(newRule);
-            }
-        }
-    }
+    // public void generateAssocRulesFromItemsets() {
+    //     // for each itemset, we get a rule
+    //     // let's use variant 2 of mining association rules from the lecture notes
+    //     for (Itemset itemset : itemsets) {
+    //         int rightHandSide = itemset.getItems()[0];
+    //         // everything else is in the antecedent
+    //         var leftHandSide = Arrays.copyOfRange(itemset.getItems(), 1, itemset.getItems().length);
+    //         Rule newRule = new Rule(leftHandSide, rightHandSide);
+    //         // for this rule, we check if it is above the min confidence
+    //         var minConf = 0.4;
+    //         if (newRule.getConfidence() > minConf) {
+    //             ruleArray.add(newRule);
+    //         }
+    //     }
+    // }
 
 
     private ArrayList<Rule> ruleSubset(List<Rule> ruleSet, Transaction transaction) {
@@ -125,9 +168,9 @@ public class RG {
         return ruleArrayList;
     }
 
-    private void candidateGen() {
+    private List<Rule> candidateGen(List<Rule> ruleArray) {
         List<Rule> candidateRules = new ArrayList<>();
-        Set<Rule> generatedRuleAntecedents = new HashSet<>();
+        Set<int[]> generatedRuleAntecedents = new HashSet<>();
         for (Rule rule : ruleArray) {
             var ruleAntecedents = rule.getAntecedent();
             int[] newRuleAntecedents = new int[ruleAntecedents.length + 1];
@@ -162,20 +205,25 @@ public class RG {
                     
                     if (!generatedRuleAntecedents.contains(newRuleAntecedents)) {
                         Rule biggerRule = new Rule(newRuleAntecedents, rule2.getConsequent());
-                        generatedRuleAntecedents.add(biggerRule);
+                        generatedRuleAntecedents.add(newRuleAntecedents);
+                        candidateRules.add(biggerRule);
                     }
                 }
             }
         }
+
+        return candidateRules;
     }
     
-    private ArrayList<Rule> genRules() {
+    private ArrayList<Rule> genRules(List<Rule> ruleArray) {
+        List<Rule> currRuleArray = new ArrayList<>();
         for (Rule rule : ruleArray) {
-            if (rule.getConfidence() < minConf) {
-                ruleArray.remove(rule);
+            System.out.printf("Antecedent: %d, Consequent: %d, Confidence: %f \n", rule.getAntecedent()[0], rule.getConsequent(), rule.getConfidence());
+            if (rule.getConfidence() > minConf) {
+                currRuleArray.add(rule);
             }
         }
-        return ruleArray;
+        return (ArrayList<Rule>) currRuleArray;
     }
 
     // FIXME #16

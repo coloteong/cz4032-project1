@@ -67,8 +67,6 @@ public class Reader {
              }
              Transaction transaction = new Transaction(Integer.parseInt(arrays[classColumn]), intArray);
 
-             System.out.println(transaction.getTransactionClass());
-
              transactionList[i] = transaction;
         }
         return transactionList;

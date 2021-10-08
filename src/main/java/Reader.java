@@ -20,7 +20,6 @@ import weka.filters.supervised.attribute.Discretize;
 
 public class Reader {
 
-    public Transaction[] transactionList;
     public String dataDir;
     public int numColumns;
     public int numTransactions;
@@ -42,12 +41,12 @@ public class Reader {
 
         System.out.println("Enter column number of class (0 indexed) ");
         var classColumn = sc.nextInt();
-        readCsv(fileName, classColumn);
+        var transactionList = readCsv(fileName, classColumn);
         sc.close();
         return transactionList;
     }
 
-    public void readCsv(String fileName, Integer classColumn) throws IOException, CsvException {
+    public Transaction[] readCsv(String fileName, Integer classColumn) throws IOException, CsvException {
         List<String[]> r;
         try (CSVReader reader = new CSVReader(new FileReader(fileName))) {
             r = reader.readAll();
@@ -55,14 +54,24 @@ public class Reader {
 
         numColumns = r.get(0).length;
         numTransactions = r.size() - 1;
-        for (int i = 1; i < numTransactions; i++) {
-            var arrays = r.get(i)
-             int[] anotherArray = new int[arrays.length - 1];
+        var transactionList = new Transaction[numTransactions];
+        for (int i = 0; i < numTransactions; i++) {
+            // ignore header
+             var arrays = r.get(i + 1);
+             String[] anotherArray = new String[arrays.length - 1];
+             int[] intArray = new int[arrays.length - 1];
              System.arraycopy(arrays, 0, anotherArray, 0, classColumn);
              System.arraycopy(arrays, classColumn + 1, anotherArray, classColumn, arrays.length - classColumn - 1);
-             Transaction transaction = new Transaction(Integer.parseInt(arrays[classColumn]), anotherArray);
+             for (int j = 0; j < anotherArray.length; j++) {
+                 intArray[j] = Integer.parseInt(anotherArray[j]);
+             }
+             Transaction transaction = new Transaction(Integer.parseInt(arrays[classColumn]), intArray);
+
+             System.out.println(transaction.getTransactionClass());
+
              transactionList[i] = transaction;
         }
+        return transactionList;
     }
 }
 

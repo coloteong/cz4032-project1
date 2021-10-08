@@ -7,6 +7,7 @@ public class Main {
         Reader csvReader = new Reader();
         Transaction[] transactionList = csvReader.startReader();
         RG ruleGenerator = new RG(transactionList);
+        ruleGenerator.getRuleItems();
         // rg.start();
         // rg.createInitialItemsets();
         // rg.genRules();

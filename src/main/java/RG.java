@@ -1,10 +1,6 @@
-import de.viadee.discretizers4j.impl.EqualSizeDiscretizer;
-import weka.classifiers.trees.m5.Rule;
-
 import org.apache.commons.lang3.*;
 import java.io.*;
 import java.util.*;
-
 public class RG {
 
 
@@ -14,17 +10,17 @@ public class RG {
     private int numColumns;
     // the number of transactions in the source file
     private static int numTransactions;
+    public Transaction[] transactionList;
     private double minSup = 0.06;
-    private Transaction[] transactionList;
     // stores all the rules
-    private static ArrayList<Rule> ruleArray = new ArrayList<>();
+    private ArrayList<Rule> ruleArray = new ArrayList<>();
 
     public RG(Transaction[] transactionList) {
         this.transactionList = transactionList;
     }
 
-    public static ArrayList<Rule> getRuleArray() {
-        return ruleArray;
+    public void getRuleItems() {
+        ruleArray = createInitialRuleItems();
     }
 
     private ArrayList<Rule> createInitialRuleItems() {
@@ -47,7 +43,6 @@ public class RG {
             Rule initialRule = new Rule(ruleItem);
 
             for (Integer ruleClass : possibleClasses) {
-
                 if (i == 0) {
                     initialRule.setConsequent(ruleClass);
                 } else {
@@ -64,23 +59,6 @@ public class RG {
         return currRuleArray;
     }
 
-    public void getRulesfromItemsets() {
-        createInitialRuleItems();
-        while (itemsets.size() > 0) {
-            // ruleArray = candidateGen();
-            // lines 6 to 10
-            for ( Transaction transaction : transactionList) {
-                var cD = ruleSubset(ruleArray, transaction);
-                for (Rule rule : cD) {
-                    rule.incrementCondSup();
-                    if (rule.getConsequent() == transaction.getTransactionClass()) {
-                        rule.incrementRuleSup();
-                    }
-                }
-            }
-
-        }
-    }
 
     //TODO #7
     public void generateFrequentItemsets() {

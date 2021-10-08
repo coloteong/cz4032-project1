@@ -34,10 +34,8 @@ public class Reader {
             }
         }
 
-        boolean classFound = false;
         System.out.println("Enter column number of class (0 indexed) ");
         var classColumn = sc.nextInt();
-
         readCsv(fileName, classColumn);
 
     }
@@ -51,7 +49,7 @@ public class Reader {
         numColumns = r.get(0).length;
         numTransactions = r.size() - 1;
      
-        List<String[]> itemList = new ArrayList<>();
+        List<Double[]> itemList = new ArrayList<>();
         int[] classList = new int[numTransactions];
 
         for (int i = 1; i < numTransactions; i++) {
@@ -61,10 +59,14 @@ public class Reader {
             String[] anotherArray = new String[arrays.length - 1];
             System.arraycopy(arrays, 0, anotherArray, 0, classColumn);
             System.arraycopy(arrays, classColumn + 1, anotherArray, classColumn, arrays.length - classColumn - 1);
-            itemList.add(anotherArray);
+            Double[] copiedArray = new Double[anotherArray.length];
+            for (int j = 0; j < copiedArray.length; j++) {
+                copiedArray[j] = Double.parseDouble(anotherArray[j]);
+            }
+            itemList.add(copiedArray);
             classList[i] = Integer.parseInt(arrays[classColumn]);
         }
-        Double[][] dataValues = fitDiscretizerToData(itemList);
+        Number[][] dataValues = fitDiscretizerToData(itemList);
         Integer[][] intValues = new Integer[numColumns - 1][numTransactions];
         for (int i = 0; i < numColumns - 1; i++) {
             for (int j = 0; j < numTransactions; j++) {
@@ -94,20 +96,22 @@ public class Reader {
 
     }
 
-    private Double[][] fitDiscretizerToData(List<String[]> data) {
-        Double[][] values = new Double[numColumns - 1][numTransactions];
-        Double[][] copiedValues = new Double[numColumns - 1][numTransactions];
+    private Number[][] fitDiscretizerToData(List<Double[]> data) {
+        Number[][] values = new Double[numColumns - 1][numTransactions];
+        Number[][] copiedValues = new Double[numColumns - 1][numTransactions];
 
         for (int i = 0; i < numColumns - 1; i++) {
+        Number[] valuesToDiscretize = new Double[numTransactions];
             for (int j = 0; j < data.size(); j++) {
-                var value = data.get(j)[i];
-                values[i][j] = Double.parseDouble(value);
-                copiedValues[i][j] = values[i][j];
-                System.out.println(values[i][j]);
+                valuesToDiscretize[j] = (Number) data.get(j)[i];
+                // var value = data.get(j)[i];
+                // values[i][j] = value;
+                copiedValues[i][j] = valuesToDiscretize[j];
+                // System.out.println(values[i]);
             }
             // FIXME
             EqualSizeDiscretizer discretizer = new EqualSizeDiscretizer();
-            discretizer.fit(values[i]);
+            discretizer.fit(valuesToDiscretize);
             copiedValues[i] = discretizer.apply(copiedValues[i]);
         }
     return copiedValues;

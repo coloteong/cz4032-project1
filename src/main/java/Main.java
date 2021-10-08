@@ -4,7 +4,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
 
-        RG rg = new RG();
+        // RG rg = new RG();
         Reader csvReader = new Reader();
         csvReader.startReader();
         // rg.start();

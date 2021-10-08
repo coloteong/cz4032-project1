@@ -1,4 +1,5 @@
 import de.viadee.discretizers4j.impl.EqualSizeDiscretizer;
+import weka.classifiers.trees.m5.Rule;
 
 import org.apache.commons.lang3.*;
 import java.io.*;
@@ -6,8 +7,7 @@ import java.util.*;
 
 public class RG {
 
-    // list of the current itemsets
-    private List<Itemset> itemsets;
+
     // the number of itemsets
     private int numItems;
     // the number of columns in the data
@@ -15,14 +15,11 @@ public class RG {
     // the number of transactions in the source file
     private static int numTransactions;
     private double minSup = 0.06;
-    // path to the data file
-    // the  2D array i.e. dataArray
-    private static Transaction[] transactionList;
+    private Transaction[] transactionList;
     // stores all the rules
     private static ArrayList<Rule> ruleArray = new ArrayList<>();
-    // stores all the possible classes in the data
 
-    public void Rule(Transaction[] transactionList) {
+    public RG(Transaction[] transactionList) {
         this.transactionList = transactionList;
     }
 
@@ -30,21 +27,41 @@ public class RG {
         return ruleArray;
     }
 
-    public List<Itemset> getItemsets() {
-        return itemsets;
-    }
-
-    public Transaction[] getTransactions() {
-        return transactionList;
-    }
-
-    private void createInitialRuleItems() {
+    private ArrayList<Rule> createInitialRuleItems() {
         // generate all the rule items with one item on the antecedent
         // which is also frequent
-        Set<Integer> itemSet = new HashSet<Integer>();
+        ArrayList<Rule> currRuleArray = new ArrayList<>();
+        Set<Integer> itemSet = new HashSet<>();
+        Set<Integer> possibleClasses = new HashSet<>();
+        Set<Integer> generatedRuleAntecedent = new HashSet<>();
         for (Transaction transaction : transactionList) {
-            int[] transactionItems = transaction.getTransactionItems();
+            possibleClasses.add(transaction.getTransactionClass());
+            for (int item : transaction.getTransactionItems()) {
+                itemSet.add(item);
+            }
         }
+
+        for (Integer item : itemSet) {
+            var i = 0;
+            int[] ruleItem = {item};
+            Rule initialRule = new Rule(ruleItem);
+
+            for (Integer ruleClass : possibleClasses) {
+
+                if (i == 0) {
+                    initialRule.setConsequent(ruleClass);
+                } else {
+                    Rule rule = new Rule(ruleItem, ruleClass);
+                    if (rule.getConfidence() > initialRule.getConfidence()) {
+                        initialRule = rule;
+                    }
+                }
+                i++;
+            }
+            currRuleArray.add(initialRule);
+        }
+
+        return currRuleArray;
     }
 
     public void getRulesfromItemsets() {
@@ -88,29 +105,6 @@ public class RG {
             itemsetNumber++;
         }
     }
-
-    private Double[][] fitDiscretizerToData(ArrayList<String> data, int classColumn) {
-        // discretize the values in each column
-        // need to have copiedValues since discretizer.fit sorts the array
-        Double[][] values = new Double[numColumns][numTransactions];
-        Double[][] copiedValues = new Double[numColumns][numTransactions];
-        for (int i = 0; i < numColumns; i++) {
-            if (i != classColumn) {
-                for (int j = 0; j < numTransactions; j++) {
-                    values[i][j] = Double.parseDouble(data.get((j * numColumns) + i));
-                    copiedValues[i][j] = values[i][j];
-                }
-            //TODO: #3 the current discretizer is the EqualSizeDiscretizer, can look for other libraries or other 
-            // discretizers to implement a better algorithm
-            // System.out.println(values[i][0]);
-            EqualSizeDiscretizer discretizer = new EqualSizeDiscretizer();
-            discretizer.fit(values[i]);
-            copiedValues[i] = discretizer.apply(copiedValues[i]);
-            }
-        }
-        return copiedValues;
-    }
-
 
     public void generateAssocRulesFromItemsets() {
         // for each itemset, we get a rule

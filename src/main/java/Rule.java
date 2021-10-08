@@ -22,6 +22,16 @@ public class Rule implements Comparable<Rule>{
         count++;
     }
 
+    public Rule(int[] antecedent) {
+        this.antecedent = antecedent;
+        ruleID = count;
+        count++;
+    }
+
+    public void setConsequent(int consequent) {
+        this.consequent = consequent;
+    }
+
     public ArrayList<SpecialRule> getReplace() {
         return replace;
     }

@@ -20,12 +20,12 @@ import weka.filters.supervised.attribute.Discretize;
 
 public class Reader {
 
-    public List<Transaction> transactionList;
+    public Transaction[] transactionList;
     public String dataDir;
     public int numColumns;
     public int numTransactions;
 
-    public void startReader() throws IOException, CsvException {
+    public Transaction[] startReader() throws IOException, CsvException {
 
         Scanner sc = new Scanner(System.in);
 
@@ -43,7 +43,8 @@ public class Reader {
         System.out.println("Enter column number of class (0 indexed) ");
         var classColumn = sc.nextInt();
         readCsv(fileName, classColumn);
-
+        sc.close();
+        return transactionList;
     }
 
     public void readCsv(String fileName, Integer classColumn) throws IOException, CsvException {
@@ -54,13 +55,16 @@ public class Reader {
 
         numColumns = r.get(0).length;
         numTransactions = r.size() - 1;
-        for (String[] arrays: r) {
+        for (int i = 1; i < numTransactions; i++) {
+            var arrays = r.get(i)
              int[] anotherArray = new int[arrays.length - 1];
              System.arraycopy(arrays, 0, anotherArray, 0, classColumn);
              System.arraycopy(arrays, classColumn + 1, anotherArray, classColumn, arrays.length - classColumn - 1);
              Transaction transaction = new Transaction(Integer.parseInt(arrays[classColumn]), anotherArray);
-             transactionList.add(transaction);
+             transactionList[i] = transaction;
         }
+    }
+}
 
     //     for (int i = 1; i < numTransactions; i++) {
     //     // }
@@ -126,4 +130,4 @@ public class Reader {
     //     }
     // return copiedValues;
     // }
-}
+//}

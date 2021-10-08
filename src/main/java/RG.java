@@ -11,7 +11,8 @@ public class RG {
     // the number of transactions in the source file
     private static int numTransactions;
     public Transaction[] transactionList;
-    private double minSup = 0.06;
+    private double minSup = 0.01;
+    private double minConf = 0.1;
     // stores all the rules
     private ArrayList<Rule> ruleArray = new ArrayList<>();
 
@@ -21,6 +22,9 @@ public class RG {
 
     public void getRuleItems() {
         ruleArray = createInitialRuleItems();
+        ruleArray = genRules();
+        // seems like our create initial rule items is already genRules
+
     }
 
     private ArrayList<Rule> createInitialRuleItems() {
@@ -29,7 +33,6 @@ public class RG {
         ArrayList<Rule> currRuleArray = new ArrayList<>();
         Set<Integer> itemSet = new HashSet<>();
         Set<Integer> possibleClasses = new HashSet<>();
-        Set<Integer> generatedRuleAntecedent = new HashSet<>();
         for (Transaction transaction : transactionList) {
             possibleClasses.add(transaction.getTransactionClass());
             for (int item : transaction.getTransactionItems()) {
@@ -53,9 +56,12 @@ public class RG {
                 }
                 i++;
             }
-            currRuleArray.add(initialRule);
-        }
 
+            if (initialRule.getSupport() > minSup) {
+                currRuleArray.add(initialRule);
+            }
+        }
+        System.out.println(currRuleArray.size());
         return currRuleArray;
     }
 
@@ -123,8 +129,13 @@ public class RG {
 
     }
     
-    private void genRules() {
-
+    private ArrayList<Rule> genRules() {
+        for (Rule rule : ruleArray) {
+            if (rule.getConfidence() < minConf) {
+                ruleArray.remove(rule);
+            }
+        }
+        return ruleArray;
     }
 
     // FIXME #16

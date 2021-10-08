@@ -1,4 +1,6 @@
 import org.apache.commons.lang3.*;
+import org.netlib.util.intW;
+
 import java.io.*;
 import java.util.*;
 public class RG {
@@ -12,7 +14,7 @@ public class RG {
     public static int numTransactions;
     public Transaction[] transactionList;
     private double minSup = 0.01;
-    private double minConf = 0.6;
+    private double minConf = 0.3;
     // stores all the rules
     private ArrayList<Rule> ruleArray = new ArrayList<>();
 
@@ -36,6 +38,7 @@ public class RG {
         // skip pruning for large 1 itemset
         while (!currRuleArray.isEmpty()) {
             candidateRules = candidateGen(currRuleArray);
+            System.out.printf("Size of candidateRules: %d, number of items in antecedent: %d", candidateRules.size(), candidateRules.get(0).getAntecedent().length);
             currRuleArray = new ArrayList<>();
             for (Transaction transaction : transactionList) {
                 var cD = ruleSubset(candidateRules, transaction);
@@ -171,42 +174,60 @@ public class RG {
     private List<Rule> candidateGen(List<Rule> ruleArray) {
         List<Rule> candidateRules = new ArrayList<>();
         Set<int[]> generatedRuleAntecedents = new HashSet<>();
-        for (Rule rule : ruleArray) {
+
+        for (int i = 0; i < ruleArray.size(); i++) {
+                
+            Rule rule = ruleArray.get(i);
             var ruleAntecedents = rule.getAntecedent();
             int[] newRuleAntecedents = new int[ruleAntecedents.length + 1];
 
-            for (int i = 0; i < ruleAntecedents.length; i++) {
-                newRuleAntecedents[i] = ruleAntecedents[i];
+            for (int j = 0; j < ruleAntecedents.length; j++) {
+                newRuleAntecedents[j] = ruleAntecedents[j];
             }
 
-            for (Rule rule2 : ruleArray) {
+            System.out.printf("Rule 1 antecedent: %d\n", rule.getAntecedent()[0]);
+            for (int j = 0; j < i; j++) {
+                
+                Rule rule2 = ruleArray.get(j);
                 var contains = true;
                 var nDiff = 0;
                 var rule2Antecedents = rule2.getAntecedent();
 
                 if (rule.getConsequent() == rule2.getConsequent()) {
-
-                    for (int i = 0; i < rule2Antecedents.length; i++) {
-                        if (!ArrayUtils.contains(newRuleAntecedents, rule2Antecedents[i])) {
+                    for (int k = 0; k < rule2Antecedents.length; k++) {
+                        System.out.printf("rule 2 antecedents : %d \n", rule2Antecedents[k]);
+                        if (!ArrayUtils.contains(newRuleAntecedents, rule2Antecedents[k])) {
                             contains = false;
                             nDiff++;
                         }
                     }
 
+                    System.out.printf("nDiff = %d\n", nDiff);
+
                     if (!contains) {
                         if (nDiff == 1) {
-                            for (int i = 0; i < rule2Antecedents.length; i++) {
-                                if (!ArrayUtils.contains(newRuleAntecedents, rule2Antecedents[i])) {
-                                    newRuleAntecedents[newRuleAntecedents.length - 1] = rule2Antecedents[i];
+                            for (int k = 0; k < rule2Antecedents.length; k++) {
+                                if (!ArrayUtils.contains(newRuleAntecedents, rule2Antecedents[k])) {
+                                    System.out.println("Here we are");
+                                    newRuleAntecedents[newRuleAntecedents.length - 1] = rule2Antecedents[k];
                                 }
                             }
                         }
                     }
+
+                    for (int k : newRuleAntecedents) {
+                        System.out.printf("Antecedent: %d \n", k);
+                    }
                     
-                    if (!generatedRuleAntecedents.contains(newRuleAntecedents)) {
-                        Rule biggerRule = new Rule(newRuleAntecedents, rule2.getConsequent());
-                        generatedRuleAntecedents.add(newRuleAntecedents);
-                        candidateRules.add(biggerRule);
+                    if (!ArrayUtils.contains(newRuleAntecedents, 0)) {
+                            Rule biggerRule = new Rule(newRuleAntecedents, rule2.getConsequent());
+                            System.out.println("Antecedents of the New Rule");
+                            for (int item : newRuleAntecedents) {
+                                System.out.printf("%d, ", item);
+                            }
+                            System.out.printf("\n");
+                            generatedRuleAntecedents.add(newRuleAntecedents);
+                            candidateRules.add(biggerRule);
                     }
                 }
             }

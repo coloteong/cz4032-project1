@@ -1,4 +1,0 @@
-digraph "cz4032:project:jar:1.0-SNAPSHOT" { 
-	"cz4032:project:jar:1.0-SNAPSHOT" -> "de.viadee:discretizer4j:jar:1.0.0:compile" ; 
-	"cz4032:project:jar:1.0-SNAPSHOT" -> "org.apache.commons:commons-lang3:jar:3.1:compile" ; 
- } 

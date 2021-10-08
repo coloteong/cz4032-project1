@@ -7,8 +7,6 @@ public class Rule implements Comparable<Rule>{
     private int ruleID;
     private int[] antecedent;
     private int consequent;
-    private double confidence;
-    private double support;
     private int ruleSupportCount;
     private int condSupportCount;
     // needed in CBA-CB M2
@@ -20,8 +18,6 @@ public class Rule implements Comparable<Rule>{
     public Rule(int[] antecedent, int consequent) {
         this.antecedent = antecedent;
         this.consequent = consequent;
-        this.confidence = countConfidence(this.antecedent, this.consequent);
-        this.support = RG.countSupport(this.antecedent);
         ruleID = count;
         count++;
     }
@@ -39,11 +35,11 @@ public class Rule implements Comparable<Rule>{
     }
 
     public double getConfidence() {
-        return this.confidence;
+        return ruleSupportCount / condSupportCount;
     }
     
     public double getSupport() {
-        return this.support;
+        return ruleSupportCount / RG.numTransactions;
     }
 
     public int[] getAntecedent() {
@@ -58,15 +54,6 @@ public class Rule implements Comparable<Rule>{
         return coveredCasesCorrectly;
     }
 
-    private double countConfidence(int[] antecedent, int consequent) { 
-        var allElements = Arrays.copyOf(antecedent, antecedent.length + 1);
-        allElements[allElements.length - 1] = consequent;
-        support = RG.countSupport(allElements);
-        double lhsSupport = RG.countSupport(antecedent);
-
-        return support/lhsSupport;
-    }
-
     public void markRule() {
         coveredCasesCorrectly = true;
     }
@@ -74,6 +61,9 @@ public class Rule implements Comparable<Rule>{
     public void addClassCasesCovered(int transactionClass) {
 
         // TODO: TIM DISCUSS: why is classCasesCovered a hashmap? shouldn't each rule only have one term in the consequent?
+        // JETH RESPONDS: we talked about this already... each rule will only have one term in the consequent
+        // but iif this rule has a high precedence, it may be used to classify things wrongly,
+        // so in that sense, it covers that class. Look at pages 4 and 5 of the paper
         if (classCasesCovered.get(transactionClass) == null) {
             classCasesCovered.put(transactionClass, 1);
         } else {

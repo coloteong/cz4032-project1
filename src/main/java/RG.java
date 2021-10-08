@@ -126,7 +126,47 @@ public class RG {
     }
 
     private void candidateGen() {
+        List<Rule> candidateRules = new ArrayList<>();
+        Set<Rule> generatedRuleAntecedents = new HashSet<>();
+        for (Rule rule : ruleArray) {
+            var ruleAntecedents = rule.getAntecedent();
+            int[] newRuleAntecedents = new int[ruleAntecedents.length + 1];
 
+            for (int i = 0; i < ruleAntecedents.length; i++) {
+                newRuleAntecedents[i] = ruleAntecedents[i];
+            }
+
+            for (Rule rule2 : ruleArray) {
+                var contains = true;
+                var nDiff = 0;
+                var rule2Antecedents = rule2.getAntecedent();
+
+                if (rule.getConsequent() == rule2.getConsequent()) {
+
+                    for (int i = 0; i < rule2Antecedents.length; i++) {
+                        if (!ArrayUtils.contains(newRuleAntecedents, rule2Antecedents[i])) {
+                            contains = false;
+                            nDiff++;
+                        }
+                    }
+
+                    if (!contains) {
+                        if (nDiff == 1) {
+                            for (int i = 0; i < rule2Antecedents.length; i++) {
+                                if (!ArrayUtils.contains(newRuleAntecedents, rule2Antecedents[i])) {
+                                    newRuleAntecedents[newRuleAntecedents.length - 1] = rule2Antecedents[i];
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (!generatedRuleAntecedents.contains(newRuleAntecedents)) {
+                        Rule biggerRule = new Rule(newRuleAntecedents, rule2.getConsequent());
+                        generatedRuleAntecedents.add(biggerRule);
+                    }
+                }
+            }
+        }
     }
     
     private ArrayList<Rule> genRules() {

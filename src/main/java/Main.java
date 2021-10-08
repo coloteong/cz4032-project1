@@ -4,9 +4,9 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
 
-        // RG rg = new RG();
         Reader csvReader = new Reader();
-        csvReader.startReader();
+        Transaction[] transactionList = csvReader.startReader();
+        RG ruleGenerator = new RG(transactionList);
         // rg.start();
         // rg.createInitialItemsets();
         // rg.genRules();

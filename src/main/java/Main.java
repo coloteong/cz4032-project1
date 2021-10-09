@@ -15,10 +15,10 @@ public class Main {
             }
             System.out.println("");
         }
-        // Classifier classifier = new Classifier();
-        // classifier.start();
-        // classifier.findCRuleAndWRule();
-        // classifier.goThroughDataAgain();
-        // classifier.chooseFinalRules();
+        Classifier classifier = new Classifier(ruleArray, transactionList);
+        classifier.start();
+        classifier.findCRuleAndWRule(); 
+        classifier.goThroughDataAgain();
+        classifier.chooseFinalRules();
     }
 }

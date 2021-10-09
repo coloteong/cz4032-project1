@@ -3,7 +3,8 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.*;
 
 public class Classifier{
-    private ArrayList<Rule> sortedRuleArray = new ArrayList<>();
+    private List<Rule> sortedRuleArray = new ArrayList<>();
+    private Transaction[] transactionList;
     // this is set U in the paper
     private List<Rule> setOfCRules = new ArrayList<>();
     // this is set Q in the paper
@@ -16,59 +17,57 @@ public class Classifier{
     private ArrayList<Rule> finalClassifier = new ArrayList<>();
     private int finalDefaultClass;
 
+    public Classifier(List<Rule> ruleArray, Transaction[] transactionList) {
+        sortedRuleArray = ruleArray;
+        this.transactionList = transactionList;
+    } 
 
     public void start() {
-        sortedRuleArray = RG.getRuleArray();
         Collections.sort(sortedRuleArray);
+        for (Rule rule : sortedRuleArray) {
+            System.out.printf("Rule id: %d\n", rule.getRuleID());
+        }
     }
     // CBA-CB M2 Stage 1
     public void findCRuleAndWRule() {
-        var transactionList = RG.getTransactionList();
+
         for (Transaction transaction : transactionList) {
             var transactionItems = transaction.getTransactionItems();
-            var hasCRule = false;
-            var hasWRule = false;
-            // if (transaction.getCRule() == null || transaction.getWRule() == null) {
-                for (Rule rule : sortedRuleArray) {
-                    var ruleLHS = rule.getAntecedent();
-                    var match = true;
-                    for (int ruleItem : ruleLHS) {
-                        if (!ArrayUtils.contains(transactionItems, ruleItem)) {
-                            match = false;
-                        }
+
+            for (Rule rule : sortedRuleArray) {
+                var ruleLHS = rule.getAntecedent();
+                var match = true;
+                for (int ruleItem : ruleLHS) {
+                    if (!ArrayUtils.contains(transactionItems, ruleItem)) {
+                        match = false;
                     }
-                    if (match) {
-                        // System.out.print(rule.getConsequent());
-                        // System.out.print(", transaction class: ");
-                        // System.out.print(transaction.getTransactionClass());
-                        // System.out.print("\n");
-                        // System.out.print("rule consequent:"); 
-                        if (rule.getConsequent() == transaction.getTransactionClass()) {
-                            if(!hasCRule) {
-                                transaction.setCRule(rule);
-                                setOfCRules.add(rule);
-                                rule.addClassCasesCovered(transaction.getTransactionClass());
-                                hasCRule = true;
-                            }
-                        } else {
-                            if(!hasWRule) {
-                            transaction.setWRule(rule);
-                            hasWRule = true;
-                            }
+                }
+                if (match) {
+                    if (rule.getConsequent() == transaction.getTransactionClass()) {
+                        if(transaction.getCRule() == null) {
+                            transaction.setCRule(rule);
+                            setOfCRules.add(rule);
+                            rule.addClassCasesCovered(transaction.getTransactionClass());
+                        }
+                    } else {
+                        if(transaction.getWRule() == null) {
+                        transaction.setWRule(rule);
                         }
                     }
                 }
-            //} 
-            if (sortedRuleArray.indexOf(transaction.getCRule()) < sortedRuleArray.indexOf(transaction.getWRule())) {
-                // need to mark CRule
-                System.out.println(setOfCRulesWithHigherPrecedence);
-                setOfCRulesWithHigherPrecedence.add(transaction.getCRule());
-                transaction.getCRule().markRule();
-
-            } else {
-                SpecialTransaction specialTransaction = new SpecialTransaction(transaction.getTransactionID(), transaction.getTransactionClass(), transaction.getCRule(), transaction.getWRule());
-                setOfSpecialTransactions.add(specialTransaction);
             }
+
+            if (transaction.getCRule() != null) {
+                // if cRule has a higher precedence
+                if ((sortedRuleArray.indexOf(transaction.getCRule()) < sortedRuleArray.indexOf(transaction.getWRule())) || transaction.getWRule() == null) {
+                // need to mark CRule
+                    setOfCRulesWithHigherPrecedence.add(transaction.getCRule());
+                    transaction.getCRule().markRule();
+                } else {
+                    SpecialTransaction specialTransaction = new SpecialTransaction(transaction.getTransactionID(), transaction.getTransactionClass(), transaction.getCRule(), transaction.getWRule());
+                    setOfSpecialTransactions.add(specialTransaction);
+                }
+            } 
             // if cRule > wRule, need to keep a data structure containing:
             // transactionID, transactionClass, cRule, and wRule
         }
@@ -77,29 +76,29 @@ public class Classifier{
     // CBA-CB: M2 (Stage 2)
     public void goThroughDataAgain() {
         for (SpecialTransaction trans : setOfSpecialTransactions) {
-            if (trans.getWRule().getCoveredCasesCorrectly()) {
-                trans.getCRule().removeClassCasesCovered(trans.getTransactionClass());
-                trans.getWRule().addClassCasesCovered(trans.getTransactionClass());
-            } else {
-                var wSet = allCoverRules(trans);
-                for (Rule rule : wSet) {
-                    SpecialRule replaceRule = new SpecialRule(trans.getTransactionID(), trans.getTransactionClass(), trans.getCRule());
-                    rule.addToReplace(replaceRule);
-                    rule.addClassCasesCovered(trans.getTransactionClass());
-                }
-                for (Rule rule : wSet) {
-                    if (!setOfCRulesWithHigherPrecedence.contains(rule)) {
-                        setOfCRulesWithHigherPrecedence.add(rule);
+                if (trans.getWRule().getCoveredCasesCorrectly()) {
+                    trans.getCRule().removeClassCasesCovered(trans.getTransactionClass());
+                    trans.getWRule().addClassCasesCovered(trans.getTransactionClass());
+                } else {
+                    var wSet = allCoverRules(trans);
+                    for (Rule rule : wSet) {
+                        SpecialRule replaceRule = new SpecialRule(trans.getTransactionID(), trans.getTransactionClass(), trans.getCRule());
+                        rule.addToReplace(replaceRule);
+                        rule.addClassCasesCovered(trans.getTransactionClass());
+                    }
+                    for (Rule rule : wSet) {
+                        if (!setOfCRulesWithHigherPrecedence.contains(rule)) {
+                            setOfCRulesWithHigherPrecedence.add(rule);
+                        }
                     }
                 }
-            }
         }
     }
 
     private ArrayList<Rule> allCoverRules(SpecialTransaction specialTransaction) {
         ArrayList<Rule> wSet = new ArrayList<Rule>();
         // since the ids are just consecutive integers from 0 to n
-        var currTransaction = RG.getTransactionList()[specialTransaction.getTransactionID()];
+        var currTransaction = transactionList[specialTransaction.getTransactionID()];
         // for (Transaction transaction : RG.getTransactionList()) {
         //     if (transaction.getTransactionID() == specialTransaction.getTransactionID()) {
         //         Transaction currTransaction = transaction;
@@ -132,7 +131,7 @@ public class Classifier{
 
     // stage 3
     public void chooseFinalRules() {
-        var transactionList = RG.getTransactionList();
+   
         var classDistr = compClassDistri(transactionList);
         int ruleErrors = 0;
         // line 3

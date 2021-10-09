@@ -120,12 +120,12 @@ public class Rule implements Comparable<Rule>{
         // compareTo should return < 0 if this is supposed to be
         // less than other, > 0 if this is supposed to be greater than 
         // other and 0 if they are supposed to be equal
-        if (confidence > other.getConfidence()) {
+        if (getConfidence() > other.getConfidence()) {
             return 1;
-        } else if (confidence == other.getConfidence()) {
-            if (support > other.getSupport()) {
+        } else if (getConfidence() == other.getConfidence()) {
+            if (getSupport() > other.getSupport()) {
                 return 1;
-            } else if (support == other.getSupport()) {
+            } else if (getSupport() == other.getSupport()) {
                 if (ruleID < other.getRuleID() ) {
                     return 1;
                 }

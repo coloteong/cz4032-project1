@@ -10,7 +10,7 @@ public class RG {
     // the number of transactions in the source file
     public static int numTransactions;
     public Transaction[] transactionList;
-    private double minSup = 0.3;
+    private double minSup = 0.03;
     private double minConf = 0.1;
     // stores all the rules
     private ArrayList<Rule> ruleArray = new ArrayList<>();

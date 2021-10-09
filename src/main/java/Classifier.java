@@ -83,7 +83,7 @@ public class Classifier{
                     transaction.getCRule().markRule();
                 }            
             }
-            if (sortedRuleArray.indexOf(transaction.getWRule()) < sortedRuleArray.indexOf(transaction.getCRule()) || transaction.getCRule() == null){
+            if ((sortedRuleArray.indexOf(transaction.getWRule()) < sortedRuleArray.indexOf(transaction.getCRule()) || transaction.getCRule() == null) && transaction.getWRule() != null){
                 // case 1 can also come here 
                 // case 2 comes here
                 // if cRule > wRule, need to keep a data structure containing:
@@ -101,20 +101,84 @@ public class Classifier{
 
     // CBA-CB: M2 (Stage 2)
     public void goThroughDataAgain() {
+
         for (SpecialTransaction trans : setOfSpecialTransactions) {
+
                 if (trans.getWRule().getCoveredCasesCorrectly()) {
-                    trans.getCRule().removeClassCasesCovered(trans.getTransactionClass());
+                    if (trans.getCRule() != null) {
+
+                        for (Rule rule : setOfCRules) {
+                            if (trans.getCRule().getRuleID() == rule.getRuleID()) {
+                                rule.removeClassCasesCovered(trans.getTransactionClass());
+                            }
+                        }
+
+                        for (Rule rule : setOfCRulesWithHigherPrecedence) {
+                            if (trans.getCRule().getRuleID() == rule.getRuleID()) {
+                                rule.removeClassCasesCovered(trans.getTransactionClass());
+                            }
+                        }
+
+                        trans.getCRule().removeClassCasesCovered(trans.getTransactionClass());
+                    }
+
+                    for (Rule rule : setOfCRules) {
+                        if (trans.getWRule().getRuleID() == rule.getRuleID()) {
+                            trans.getWRule().addClassCasesCovered(trans.getTransactionClass());
+                        }
+                    }
+
+                    for (Rule rule : setOfCRulesWithHigherPrecedence) {
+                        if (trans.getWRule().getRuleID() == rule.getRuleID()) {
+                            trans.getWRule().addClassCasesCovered(trans.getTransactionClass());
+                        }
+                    }
+
                     trans.getWRule().addClassCasesCovered(trans.getTransactionClass());
+
                 } else {
                     var wSet = allCoverRules(trans);
+
                     for (Rule rule : wSet) {
-                        SpecialRule replaceRule = new SpecialRule(trans.getTransactionID(), trans.getTransactionClass(), trans.getCRule());
-                        rule.addToReplace(replaceRule);
+
+                        if (trans.getCRule() != null) {
+
+                            SpecialRule replaceRule = new SpecialRule(trans.getTransactionID(), trans.getTransactionClass(), trans.getCRule());
+                            rule.addToReplace(replaceRule);
+
+                            for (Rule rule2 : setOfCRules) {
+                                if (rule.getRuleID() == rule2.getRuleID()) {
+                                    rule.addToReplace(replaceRule);
+                                }
+                            }
+
+                            for (Rule rule2 : setOfCRulesWithHigherPrecedence) {
+                                if (rule.getRuleID() == rule2.getRuleID()) {
+                                    rule.addToReplace(replaceRule);
+                                }
+                            }
+
+                        }
+
+                        for (Rule rule2 : setOfCRules) {
+                            if (rule.getRuleID() == rule2.getRuleID()) {
+                                rule2.addClassCasesCovered(trans.getTransactionClass());
+                            }
+                        }
+
+                        for (Rule rule2 : setOfCRulesWithHigherPrecedence) {
+                            if (rule.getRuleID() == rule2.getRuleID()) {
+                                rule2.addClassCasesCovered(trans.getTransactionClass());
+                            }
+                        }
                         rule.addClassCasesCovered(trans.getTransactionClass());
                     }
                     for (Rule rule : wSet) {
+
                         if (!setOfCRulesWithHigherPrecedence.contains(rule)) {
+
                             setOfCRulesWithHigherPrecedence.add(rule);
+
                         }
                     }
                 }
@@ -122,19 +186,12 @@ public class Classifier{
     }
 
     private ArrayList<Rule> allCoverRules(SpecialTransaction specialTransaction) {
-        ArrayList<Rule> wSet = new ArrayList<Rule>();
+        ArrayList<Rule> wSet = new ArrayList<>();
         // since the ids are just consecutive integers from 0 to n
         var currTransaction = transactionList[specialTransaction.getTransactionID()];
-        // for (Transaction transaction : RG.getTransactionList()) {
-        //     if (transaction.getTransactionID() == specialTransaction.getTransactionID()) {
-        //         Transaction currTransaction = transaction;
-        //         break;
-        //     }
-        // }
         for (Rule cRule : setOfCRules) {
             // if the cRule has a higher precedence
-            // if (comparePrecedence(cRule, specialTransaction.getCRule()) == cRule) 
-            if (cRule.compareTo(specialTransaction.getCRule()) > 0) {
+            if (cRule.compareTo(specialTransaction.getCRule()) > 0 || specialTransaction.getCRule() == null) {
                 var match = true;
                 // check if it wrongly classifies
                 for (int item : currTransaction.getTransactionItems()) {
@@ -143,11 +200,13 @@ public class Classifier{
                         break;
                     }
                 }
+
                 if (match) {
                     if (cRule.getConsequent() != currTransaction.getTransactionClass()) {
                         wSet.add(cRule);
                     }
                 }
+
             } else {
                 break;
             }

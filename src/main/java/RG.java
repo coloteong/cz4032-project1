@@ -3,6 +3,8 @@ import org.netlib.util.intW;
 
 import java.io.*;
 import java.util.*;
+
+import javax.swing.plaf.synth.SynthTextAreaUI;
 public class RG {
 
 
@@ -57,6 +59,10 @@ public class RG {
             }
 
             currRuleArray = genRules(currRuleArray);
+            for (Rule rule : currRuleArray) {
+                System.out.println("List of rules: ");
+                System.out.println(rule.getRuleID());
+            }
 
             ruleArray.addAll(currRuleArray);
             }
@@ -73,6 +79,7 @@ public class RG {
         for (Transaction transaction : transactionList) {
             possibleClasses.add(transaction.getTransactionClass());
             for (int item : transaction.getTransactionItems()) {
+                System.out.println(item);
                 itemSet.add(item);
             }
         }
@@ -168,6 +175,10 @@ public class RG {
                 ruleArrayList.add(rule);
             }
         }
+        for (Rule rule : ruleArrayList) {
+            System.out.println(rule.getRuleID());
+        }
+        
         return ruleArrayList;
     }
 
@@ -248,7 +259,7 @@ public class RG {
     }
 
     // FIXME #16
-    private ArrayList<Itemset> createNewItemsetsFromPrevious() {
+    /* private ArrayList<Itemset> createNewItemsetsFromPrevious() {
         // get the number of items in the current candidate itemset
         int currentItemsetSize = itemsets.get(0).getItems().length;
         System.out.println("generating frequent candidate frequent itemsets of size " + (currentItemsetSize + 1) );
@@ -335,7 +346,7 @@ public class RG {
         }
         return frequentCandidates;
     }
-
+*/
 
     public static double countSupport(int[] items) {
         /*

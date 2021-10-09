@@ -8,12 +8,7 @@ public class Main {
         Transaction[] transactionList = csvReader.startReader();
         RG ruleGenerator = new RG(transactionList);
         ruleGenerator.getRuleItems();
-        // rg.start();
-        // rg.createInitialItemsets();
-        // rg.genRules();
-        // rg.pruneRules();
 
-        // rg.generateFrequentItemsets();
         // Classifier classifier = new Classifier();
         // classifier.start();
         // classifier.findCRuleAndWRule();

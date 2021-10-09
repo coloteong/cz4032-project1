@@ -1,17 +1,9 @@
 import org.apache.commons.lang3.*;
-import org.netlib.util.intW;
 
 import java.io.*;
 import java.util.*;
-
-import javax.swing.plaf.synth.SynthTextAreaUI;
 public class RG {
 
-
-    // the number of itemsets
-    private int numItems;
-    // the number of columns in the data
-    private int numColumns;
     // the number of transactions in the source file
     public static int numTransactions;
     public Transaction[] transactionList;
@@ -256,121 +248,6 @@ public class RG {
             }
         }
         return (ArrayList<Rule>) currRuleArray;
-    }
-
-    // FIXME #16
-    /* private ArrayList<Itemset> createNewItemsetsFromPrevious() {
-        // get the number of items in the current candidate itemset
-        int currentItemsetSize = itemsets.get(0).getItems().length;
-        System.out.println("generating frequent candidate frequent itemsets of size " + (currentItemsetSize + 1) );
-        // HashMap<String, int[]> freqCandidates = new HashMap<>();
-        ArrayList<Itemset> freqCandidates = new ArrayList<>();
-        for (int i = 0; i < itemsets.size(); i++) {
-            for (int j = 0; j < itemsets.size(); j++) {
-                if (j != i) {
-                    var X = itemsets.get(i).getItems();
-                    // using array X as the base, we make the first n - 1 elements of the next itemset
-                    // the elements of X
-                    int[] newCand = new int[X.length + 1];
-                    for (int k = 0; k < X.length; k++) {
-                        newCand[k] = X[k];
-                    }
-                    // we would then want to check for elements in the frequent n - 1 itemsets that are also frequent
-                    // but which has an element not in x
-
-                    int nDifferent = 0;
-                    boolean found = false;
-                    for (int item : itemsets.get(j).getItems()) {
-                        for (int x : X) {
-                            if (x == item) {
-                                break;
-                            } 
-                            if (!found) {
-                                nDifferent++;
-                                var difference = item;
-                            }
-                        }
-                        // if there is such an element
-                        // we add this to the last position of the new candidate itemset
-                        if (nDifferent == 1) {
-                            newCand[newCand.length - 1] = item;
-                            Itemset newCandidateItemset = new Itemset(newCand);
-                            freqCandidates.add(newCandidateItemset);
-                        }
-                    }
-                    // add this new frequent itemeset of length n
-                    // and put it into the freqCandidates list
-            }
-        }
-    }
-    return freqCandidates;
-    }
-
-
-    public void createInitialItemsets() {
-        // itemsets will be an int of all the items
-        itemsets = new ArrayList<>();
-        for (int i = 0; i < numItems; i++) {
-            int[] cand = {i + 1};
-            Itemset itemset = new Itemset(cand);
-            itemsets.add(itemset);
-        }
-    }
-
-    private void convertToTransactionList(int classColumn) {
-
-        transactionList = new Transaction[numTransactions];
-        for (int i = 0; i < numTransactions; i++) {
-            int transactionClass = 0;
-            int[] transactionItems = new int[numColumns - 1];
-            for (int j = 0; j < numColumns; j++) {
-                if (j == classColumn) {
-                    transactionClass = dataArray.get((i * numColumns) + j);
-                } else {
-                    transactionItems[j - 1] = dataArray.get((i * numColumns) + j);
-                }
-            }
-            Transaction transaction = new Transaction(transactionClass, transactionItems);
-            transactionList[i] = transaction;
-        }
-    }
-
-    private List<Itemset> calculateFrequentItemsets() {
-        var size = itemsets.get(0).getItems().length;
-
-        System.out.println("Calculating frequent itemsets to compute the frequency of itemsets of size " + size);
-        List<Itemset> frequentCandidates = new ArrayList<>();
-        for (Itemset itemset : itemsets) {  
-            if (itemset.getSupport() >= minSup) 
-                frequentCandidates.add(itemset);
-        }
-        return frequentCandidates;
-    }
-*/
-
-    public static double countSupport(int[] items) {
-        /*
-          match: whether the transaction has al the items in an itemset
-          count: number of successful matches
-         */
-        boolean match;
-        int count = 0;
-
-        // check items against each transaction
-        for (int i = 0; i < numTransactions; i++) {
-            match = true;
-            // set match to false if there is an item from items is missing in transaction
-            for (int c: items) {
-                if (!ArrayUtils.contains(transactionList[i].getTransactionItems(), c)) {
-                    match = false;
-                    break;
-                }
-            }
-            if (match) {
-                count++;
-            }
-        }
-        return count / (double) (numTransactions);
     }
 
     public void pruneRules() {

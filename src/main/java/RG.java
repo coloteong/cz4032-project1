@@ -43,22 +43,9 @@ public class RG {
                 }
                 System.out.println("");
             }
-            // System.out.printf("Size of candidateRules: %d, number of items in antecedent: %d\n", candidateRules.size(), candidateRules.get(0).getAntecedent().length);
             currRuleArray = new ArrayList<>();
             for (Transaction transaction : transactionList) {
-                // // System.out.printf("Transaction Class:%d, Transaction Items: ", transaction.getTransactionClass());
-                // // for (int item : transaction.getTransactionItems()) {
-                // //     System.out.printf("%d, ", item);
-                // // }
-                // System.out.println("");
                 var cD = ruleSubset(candidateRules, transaction);
-                // for (Rule rule : cD) {
-                //     System.out.printf("Rule Class: %d, Rule Antecedents:", rule.getConsequent()); 
-                //     for (int item : rule.getAntecedent()) {
-                //         System.out.printf("%d, ", item);
-                //     }
-                //     System.out.println("");
-                // }
                 for (Rule rule : cD) {
                     rule.incrementCondSupCount();
                     if (transaction.getTransactionClass() == rule.getConsequent()) {
@@ -291,78 +278,5 @@ public class RG {
         }
         return prunedRuleArray;
     }
-
-    // public void pruneRules() {
-    //     // prune the rules in the current Rule Array 
-    //     var lastRuleSize = ruleArray.get(ruleArray.size() - 1).getAntecedent().length;
-    //     var start = 0;
-        
-    //     for (int k = start; k < ruleArray.size(); k++) {
-    //     // for (Rule rule : currRuleArray) {
-    //         var rule = ruleArray.get(k);
-    //         System.out.println(rule.getRuleID());
-    //         var itemsInLHS = rule.getAntecedent().length;
-    //         // we can only have an R^minus if the number of items on the LHS
-    //         // is more than 1
-    //         if (itemsInLHS > 1) {
-    //             // for the number of items in the LHS = n
-    //             // we can get n rules of size n - 1
-    //             // using N choose N - 1
-    //             for (int i = 0; i < itemsInLHS; i++) {
-    //                 int[] newAntecedent = new int[itemsInLHS - 1];
-    //                 // what we do is we choose which item to ignore i.e. i
-    //                 for (int j = 0; j < newAntecedent.length; j++) {
-    //                     if (j != i)
-    //                         newAntecedent[j] = rule.getAntecedent()[i];
-    //                     else
-    //                         j--;
-    //                 }
-    //                 Rule rMinus = new Rule(newAntecedent, rule.getConsequent());
-    //                 // if (!ruleError.containsKey(rMinus)) {
-    //                 //     ruleError.put(rMinus, (float) countPessimisticError(rMinus));
-    //                 // }
-    //                 // var rMinusError = ruleError.get(rMinus);
-    //                 if (countPessimisticError(rule) > countPessimisticError(rMinus)) {
-    //                     ruleArray.remove(rule);
-    //                 }
-    //             }
-    //         }
-    //         else {
-    //             break;
-    //         }
-    //     }
-    // }
-
-    // private double countPessimisticError(Rule rule) {
-    //     // since not all transactions will apply to a rule
-    //     // we have to calculate the error based on the number 
-    //     // of transactions that can be applied as well as 
-    //     // the number of wrong transactions
-    //     var numWrongTransactions = 0;
-    //     var numApplicableTransactions = 0;
-    //     for (Transaction transaction : transactionList) {
-    //         var transactionClass = transaction.getTransactionClass();
-    //         var transactionItems = transaction.getTransactionItems();
-    //         var ruleLHS = rule.getAntecedent();
-    //         var ruleClass = rule.getConsequent();
-    //         var match = true;
-
-    //         for (int item : transactionItems) {
-    //             if (!ArrayUtils.contains(ruleLHS, item)) {
-    //                 match = false;
-    //                 break;
-    //             }
-    //         }
-    //         if (match) {
-    //             numApplicableTransactions++;
-    //             if (ruleClass != transactionClass)
-    //                 numWrongTransactions++;
-    //         }
-    //     }
-    //     double trainingError = numWrongTransactions / numApplicableTransactions;
-    //     double pessimisticError = (numWrongTransactions + (rule.getAntecedent().length * 2)) / (double) numApplicableTransactions;
-    //     return pessimisticError;
-    // }
-
 
 }

@@ -57,19 +57,45 @@ public class Classifier{
                 }
             }
 
+            /*
+            * so we can have four different situations depending on whether CRule and WRule are null or not null
+            * 1. both are not null -> standard condition, things are as per normal
+            * 2. CRule is null -> this occurs when all the rules that are generated that are applicable to the rule
+            * gives the wrong class; hence, there is no rule that classifies this transaction correctly
+            * 3. WRule is null -> this occurs when all the rules that are generated that are applicable to this rule
+            * gives the correct class; hence there is no rule that classifies this transaction wrongly
+            * 4. both are null -> none of the rules contain any element in this transaction ->
+            * this can happen because maybe this is the only transaction with weird integers
+            * this should not happen since we are discretizing 
+            * 
+            */
+
             if (transaction.getCRule() != null) {
                 // if cRule has a higher precedence
+                // if wRule is null, we do not need to care since that means all rules will correctly classify
+                // else we check the precedence
+
+                // case 1 comes here
+                // case 3 comes here
                 if ((sortedRuleArray.indexOf(transaction.getCRule()) < sortedRuleArray.indexOf(transaction.getWRule())) || transaction.getWRule() == null) {
                 // need to mark CRule
                     setOfCRulesWithHigherPrecedence.add(transaction.getCRule());
                     transaction.getCRule().markRule();
-                } else {
-                    SpecialTransaction specialTransaction = new SpecialTransaction(transaction.getTransactionID(), transaction.getTransactionClass(), transaction.getCRule(), transaction.getWRule());
-                    setOfSpecialTransactions.add(specialTransaction);
-                }
-            } 
-            // if cRule > wRule, need to keep a data structure containing:
-            // transactionID, transactionClass, cRule, and wRule
+                }            
+            }
+            if (sortedRuleArray.indexOf(transaction.getWRule()) < sortedRuleArray.indexOf(transaction.getCRule()) || transaction.getCRule() == null){
+                // case 1 can also come here 
+                // case 2 comes here
+                // if cRule > wRule, need to keep a data structure containing:
+                // transactionID, transactionClass, cRule, and wRule
+                SpecialTransaction specialTransaction = new SpecialTransaction(transaction.getTransactionID(), transaction.getTransactionClass(), transaction.getCRule(), transaction.getWRule());
+                setOfSpecialTransactions.add(specialTransaction);
+                // we need to check setOfSpecialTransactions for cases in which CRule is null
+            }
+
+            // if it is case 4, we do not do anything...
+            // need to check how to deal with this gracefully
+
         }
     }
 

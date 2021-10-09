@@ -80,7 +80,7 @@ public class RG {
             }
 
             currRuleArray = genRules(currRuleArray);
-            var prunedRuleArray = genRules(currRuleArray);
+            var prunedRuleArray = pruneRules(currRuleArray);
 
             ruleArray.addAll(prunedRuleArray);
             }
@@ -248,11 +248,15 @@ public class RG {
 
         for (Rule rule : ruleArray) {
         Map<Integer, Float> ruleIndexMap = new HashMap<>();
-            var ruleError = 1 - ((rule.getCondSupportCount() - rule.getRuleSupportCount()) / rule.getCondSupportCount());
-            System.out.printf("Current rule ID: %d, Current rule error: %d \n", rule.getRuleID(), ruleError);
+            var ruleError = (rule.getCondSupportCount() - (float) rule.getRuleSupportCount()) / rule.getCondSupportCount();
+            System.out.printf("Current rule ID: %d, Current rule error: %f \n", rule.getRuleID(), ruleError);
             var ruleAntecedent = rule.getAntecedent();
             for (int i = 0; i < ruleAntecedent.length; i++) {
-                List<Integer> antecedentList = Ints.asList(ruleAntecedent);
+                //LinkedList<Integer> antecedentList = (LinkedList<Integer>) Ints.asList(ruleAntecedent);
+                ArrayList<Integer> antecedentList = new ArrayList<>();
+                for (int j = 0; j < ruleAntecedent.length; j++) {
+                    antecedentList.add(ruleAntecedent[j]);
+                }
                 antecedentList.remove(i);
                 var smallerAntecedent = antecedentList.stream().mapToInt(Integer::intValue).toArray();
 
@@ -275,12 +279,13 @@ public class RG {
                     }
                 }
                 System.out.printf("smaller antecedent correct: %d, smaller antecedent size: %d", smallerAntecedentCorrect, smallerAntecedentSize);
-                System.out.printf("rule error: %f", ruleError);
+                System.out.printf("rule error: %f\n", ruleError);
                 ruleIndexMap.put(i, (1 - (smallerAntecedentCorrect / (float) smallerAntecedentSize)));
             }
             
             float minErrorRate = Collections.min(ruleIndexMap.values());
-            if (minErrorRate > 5 * ruleError ) {
+            if (minErrorRate > ruleError ) {
+                System.out.printf("Added rule: %d", rule.getRuleID());
                 prunedRuleArray.add(rule);
             }
         }

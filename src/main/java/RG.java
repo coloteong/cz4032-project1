@@ -10,7 +10,7 @@ public class RG {
     // the number of transactions in the source file
     public static int numTransactions;
     public Transaction[] transactionList;
-    private double minSup = 0.01;
+    private double minSup = 0.3;
     private double minConf = 0.1;
     // stores all the rules
     private ArrayList<Rule> ruleArray = new ArrayList<>();
@@ -73,7 +73,7 @@ public class RG {
                     System.out.printf("%d, ", antecedentItem);
                 }
                 System.out.println("");
-                if (rule.getSupport() > minSup) {
+                if (rule.getSupport() >= minSup) {
                     System.out.println("We are here");
                     currRuleArray.add(rule);
                 }
@@ -129,7 +129,7 @@ public class RG {
             System.out.printf("Support:");
             System.out.println(rule.getSupport());
 
-            if (rule.getSupport() > minSup) {
+            if (rule.getSupport() >= minSup) {
                 possibleRules.add(rule);
             }
         }

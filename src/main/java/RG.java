@@ -80,12 +80,9 @@ public class RG {
             }
 
             currRuleArray = genRules(currRuleArray);
+            var prunedRuleArray = genRules(currRuleArray);
 
-            for (Rule rule : currRuleArray) {
-                System.out.printf("List of rules: %d", rule.getRuleID());
-            }
-
-            ruleArray.addAll(currRuleArray);
+            ruleArray.addAll(prunedRuleArray);
             }
         return ruleArray;
     }
@@ -246,77 +243,121 @@ public class RG {
         return (ArrayList<Rule>) currRuleArray;
     }
 
-    public void pruneRules() {
-        // prune the rules in the current Rule Array 
-        var lastRuleSize = ruleArray.get(ruleArray.size() - 1).getAntecedent().length;
-        var start = 0;
+    public List<Rule> pruneRules(List<Rule> ruleArray) {
+        List<Rule> prunedRuleArray = new ArrayList<>();
+
+        for (Rule rule : ruleArray) {
+        Map<Integer, Float> ruleIndexMap = new HashMap<>();
+            var ruleError = 1 - ((rule.getCondSupportCount() - rule.getRuleSupportCount()) / rule.getCondSupportCount());
+            System.out.printf("Current rule ID: %d, Current rule error: %d \n", rule.getRuleID(), ruleError);
+            var ruleAntecedent = rule.getAntecedent();
+            for (int i = 0; i < ruleAntecedent.length; i++) {
+                List<Integer> antecedentList = Ints.asList(ruleAntecedent);
+                antecedentList.remove(i);
+                var smallerAntecedent = antecedentList.stream().mapToInt(Integer::intValue).toArray();
+
+                var smallerAntecedentCorrect = 0;
+                var smallerAntecedentSize = 0;
+                for (Transaction transaction : transactionList) {
+                    var match = true;
+                    for (int ruleItem : smallerAntecedent) {
+                        if (!ArrayUtils.contains(transaction.getTransactionItems(), ruleItem)) {
+                            match = false;
+                            break;
+                        }
+                    }
+                    
+                    if (match) {
+                        smallerAntecedentSize++;
+                        if (rule.getConsequent() == transaction.getTransactionClass()) {
+                            smallerAntecedentCorrect++;
+                        }
+                    }
+                }
+                System.out.printf("smaller antecedent correct: %d, smaller antecedent size: %d", smallerAntecedentCorrect, smallerAntecedentSize);
+                System.out.printf("rule error: %f", ruleError);
+                ruleIndexMap.put(i, (1 - (smallerAntecedentCorrect / (float) smallerAntecedentSize)));
+            }
+            
+            float minErrorRate = Collections.min(ruleIndexMap.values());
+            if (minErrorRate > 5 * ruleError ) {
+                prunedRuleArray.add(rule);
+            }
+        }
+        return prunedRuleArray;
+    }
+
+    // public void pruneRules() {
+    //     // prune the rules in the current Rule Array 
+    //     var lastRuleSize = ruleArray.get(ruleArray.size() - 1).getAntecedent().length;
+    //     var start = 0;
         
-        for (int k = start; k < ruleArray.size(); k++) {
-        // for (Rule rule : currRuleArray) {
-            var rule = ruleArray.get(k);
-            System.out.println(rule.getRuleID());
-            var itemsInLHS = rule.getAntecedent().length;
-            // we can only have an R^minus if the number of items on the LHS
-            // is more than 1
-            if (itemsInLHS > 1) {
-                // for the number of items in the LHS = n
-                // we can get n rules of size n - 1
-                // using N choose N - 1
-                for (int i = 0; i < itemsInLHS; i++) {
-                    int[] newAntecedent = new int[itemsInLHS - 1];
-                    // what we do is we choose which item to ignore i.e. i
-                    for (int j = 0; j < newAntecedent.length; j++) {
-                        if (j != i)
-                            newAntecedent[j] = rule.getAntecedent()[i];
-                        else
-                            j--;
-                    }
-                    Rule rMinus = new Rule(newAntecedent, rule.getConsequent());
-                    // if (!ruleError.containsKey(rMinus)) {
-                    //     ruleError.put(rMinus, (float) countPessimisticError(rMinus));
-                    // }
-                    // var rMinusError = ruleError.get(rMinus);
-                    if (countPessimisticError(rule) > countPessimisticError(rMinus)) {
-                        ruleArray.remove(rule);
-                    }
-                }
-            }
-            else {
-                break;
-            }
-        }
-    }
+    //     for (int k = start; k < ruleArray.size(); k++) {
+    //     // for (Rule rule : currRuleArray) {
+    //         var rule = ruleArray.get(k);
+    //         System.out.println(rule.getRuleID());
+    //         var itemsInLHS = rule.getAntecedent().length;
+    //         // we can only have an R^minus if the number of items on the LHS
+    //         // is more than 1
+    //         if (itemsInLHS > 1) {
+    //             // for the number of items in the LHS = n
+    //             // we can get n rules of size n - 1
+    //             // using N choose N - 1
+    //             for (int i = 0; i < itemsInLHS; i++) {
+    //                 int[] newAntecedent = new int[itemsInLHS - 1];
+    //                 // what we do is we choose which item to ignore i.e. i
+    //                 for (int j = 0; j < newAntecedent.length; j++) {
+    //                     if (j != i)
+    //                         newAntecedent[j] = rule.getAntecedent()[i];
+    //                     else
+    //                         j--;
+    //                 }
+    //                 Rule rMinus = new Rule(newAntecedent, rule.getConsequent());
+    //                 // if (!ruleError.containsKey(rMinus)) {
+    //                 //     ruleError.put(rMinus, (float) countPessimisticError(rMinus));
+    //                 // }
+    //                 // var rMinusError = ruleError.get(rMinus);
+    //                 if (countPessimisticError(rule) > countPessimisticError(rMinus)) {
+    //                     ruleArray.remove(rule);
+    //                 }
+    //             }
+    //         }
+    //         else {
+    //             break;
+    //         }
+    //     }
+    // }
 
-    private double countPessimisticError(Rule rule) {
-        // since not all transactions will apply to a rule
-        // we have to calculate the error based on the number 
-        // of transactions that can be applied as well as 
-        // the number of wrong transactions
-        var numWrongTransactions = 0;
-        var numApplicableTransactions = 0;
-        for (Transaction transaction : transactionList) {
-            var transactionClass = transaction.getTransactionClass();
-            var transactionItems = transaction.getTransactionItems();
-            var ruleLHS = rule.getAntecedent();
-            var ruleClass = rule.getConsequent();
-            var match = true;
+    // private double countPessimisticError(Rule rule) {
+    //     // since not all transactions will apply to a rule
+    //     // we have to calculate the error based on the number 
+    //     // of transactions that can be applied as well as 
+    //     // the number of wrong transactions
+    //     var numWrongTransactions = 0;
+    //     var numApplicableTransactions = 0;
+    //     for (Transaction transaction : transactionList) {
+    //         var transactionClass = transaction.getTransactionClass();
+    //         var transactionItems = transaction.getTransactionItems();
+    //         var ruleLHS = rule.getAntecedent();
+    //         var ruleClass = rule.getConsequent();
+    //         var match = true;
 
-            for (int item : transactionItems) {
-                if (!ArrayUtils.contains(ruleLHS, item)) {
-                    match = false;
-                    break;
-                }
-            }
-            if (match) {
-                numApplicableTransactions++;
-                if (ruleClass != transactionClass)
-                    numWrongTransactions++;
-            }
-        }
-        double trainingError = numWrongTransactions / numApplicableTransactions;
-        double pessimisticError = (numWrongTransactions + (rule.getAntecedent().length * 2)) / (double) numApplicableTransactions;
-        return pessimisticError;
-    }
+    //         for (int item : transactionItems) {
+    //             if (!ArrayUtils.contains(ruleLHS, item)) {
+    //                 match = false;
+    //                 break;
+    //             }
+    //         }
+    //         if (match) {
+    //             numApplicableTransactions++;
+    //             if (ruleClass != transactionClass)
+    //                 numWrongTransactions++;
+    //         }
+    //     }
+    //     double trainingError = numWrongTransactions / numApplicableTransactions;
+    //     double pessimisticError = (numWrongTransactions + (rule.getAntecedent().length * 2)) / (double) numApplicableTransactions;
+    //     return pessimisticError;
+    // }
 
 
 }

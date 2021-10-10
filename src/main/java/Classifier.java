@@ -25,15 +25,15 @@ public class Classifier{
     public void start() {
         Collections.sort(sortedRuleArray);
         for (Rule rule : sortedRuleArray) {
-            System.out.printf("Rule id: %d\n", rule.getRuleID());
+            System.out.printf("Rule ID:%d\n", rule.getRuleID());
         }
     }
     // CBA-CB M2 Stage 1
     public void findCRuleAndWRule() {
 
         for (Transaction transaction : transactionList) {
+            System.out.printf("Transaction ID: %d, Transaction Class: %d\n", transaction.getTransactionID(), transaction.getTransactionClass());
             var transactionItems = transaction.getTransactionItems();
-
             for (Rule rule : sortedRuleArray) {
                 var ruleLHS = rule.getAntecedent();
                 var match = true;
@@ -48,10 +48,12 @@ public class Classifier{
                             transaction.setCRule(rule);
                             setOfCRules.add(rule);
                             rule.addClassCasesCovered(transaction.getTransactionClass());
+                            System.out.printf("Transaction CRule ID: %d, Transaction CRule Class: %d\n", transaction.getCRule().getRuleID(), rule.getConsequent());
                         }
                     } else {
                         if(transaction.getWRule() == null) {
-                        transaction.setWRule(rule);
+                            transaction.setWRule(rule);
+                            System.out.printf("Transaction wRule ID: %d, Transaction WRule Class: %d\n", transaction.getWRule().getRuleID(), rule.getConsequent());
                         }
                     }
                 }
@@ -70,24 +72,24 @@ public class Classifier{
             * 
             */
 
-            if (transaction.getCRule() != null) {
                 // if cRule has a higher precedence
                 // if wRule is null, we do not need to care since that means all rules will correctly classify
                 // else we check the precedence
 
+                if (((sortedRuleArray.indexOf(transaction.getCRule()) < sortedRuleArray.indexOf(transaction.getWRule())) || transaction.getWRule() == null) && transaction.getCRule() != null) {
                 // case 1 comes here
                 // case 3 comes here
-                if ((sortedRuleArray.indexOf(transaction.getCRule()) < sortedRuleArray.indexOf(transaction.getWRule())) || transaction.getWRule() == null) {
                 // need to mark CRule
+                    System.out.printf("Transaction %d is here\n", transaction.getTransactionID());
                     setOfCRulesWithHigherPrecedence.add(transaction.getCRule());
                     transaction.getCRule().markRule();
                 }            
-            }
             if ((sortedRuleArray.indexOf(transaction.getWRule()) < sortedRuleArray.indexOf(transaction.getCRule()) || transaction.getCRule() == null) && transaction.getWRule() != null){
                 // case 1 can also come here 
                 // case 2 comes here
                 // if cRule > wRule, need to keep a data structure containing:
                 // transactionID, transactionClass, cRule, and wRule
+                System.out.printf("Transaction %d cannot be decided\n", transaction.getTransactionID());
                 SpecialTransaction specialTransaction = new SpecialTransaction(transaction.getTransactionID(), transaction.getTransactionClass(), transaction.getCRule(), transaction.getWRule());
                 setOfSpecialTransactions.add(specialTransaction);
                 // we need to check setOfSpecialTransactions for cases in which CRule is null
@@ -104,7 +106,9 @@ public class Classifier{
 
         for (SpecialTransaction trans : setOfSpecialTransactions) {
 
+            System.out.printf("Transaction ID: %d, Transaction WRule ID: %d\n", trans.getTransactionID(), trans.getWRule().getRuleID());
                 if (trans.getWRule().getCoveredCasesCorrectly()) {
+
                     if (trans.getCRule() != null) {
 
                         for (Rule rule : setOfCRules) {
@@ -138,9 +142,9 @@ public class Classifier{
 
                 } else {
                     var wSet = allCoverRules(trans);
-
+                    
                     for (Rule rule : wSet) {
-
+                        System.out.printf("Rule ID: %d\n", rule.getRuleID());
                         if (trans.getCRule() != null) {
 
                             SpecialRule replaceRule = new SpecialRule(trans.getTransactionID(), trans.getTransactionClass(), trans.getCRule());
@@ -232,19 +236,16 @@ public class Classifier{
                     if (coveredTransaction.contains(replaceRule.getTransactionID())) {
                         rule.removeClassCasesCovered(replaceRule.getTransactionClass());
                     } else {
-                        //FIXME #10
+
                         replaceRule.getCRule().removeClassCasesCovered(replaceRule.getTransactionClass());
-                        Rule tempRule = replaceRule.getCRule();
-                        // change set for which rule has to be edited if necessary
-                        for (Rule rule1 : setOfCRulesWithHigherPrecedence){
-                            if (rule1 == tempRule) {
-                                rule1.removeClassCasesCovered(replaceRule.getTransactionClass());
+                        for (Rule rule1 : setOfCRulesWithHigherPrecedence) {
+                            if (replaceRule.getCRule().getRuleID() == rule1.getRuleID()) {
+                                rule.removeClassCasesCovered(replaceRule.getTransactionClass());
                             }
-
                         }
-
                     }
                 }
+
                 ruleErrors += rule.errorsOfRule();
                 classDistr = updateClassDistr(rule, classDistr);
                 var defaultClass = selectDefault(classDistr);

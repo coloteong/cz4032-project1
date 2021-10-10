@@ -149,6 +149,7 @@ public class Classifier{
 
                             SpecialRule replaceRule = new SpecialRule(trans.getTransactionID(), trans.getTransactionClass(), trans.getCRule());
                             rule.addToReplace(replaceRule);
+                            System.out.printf("Rule to Replace: %d\n", replaceRule.getCRule().getRuleID());
 
                             for (Rule rule2 : setOfCRules) {
                                 if (rule.getRuleID() == rule2.getRuleID()) {

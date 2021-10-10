@@ -229,16 +229,19 @@ public class Classifier{
         // line 4
         for (Rule rule : setOfCRulesWithHigherPrecedence) {
             var ruleClass = rule.getConsequent();
+            System.out.printf("Rule ID: %d, Rule Consequent: %d\n", rule.getRuleID(), ruleClass);
             // line 5
             if (rule.getClassCasesCovered().get(ruleClass) != 0) {
                 // line 6
+                System.out.printf("Number of rules to replace: %d\n", rule.getReplace().size());
                 for (SpecialRule replaceRule : rule.getReplace()) {
                     // if the transactionID has been covered
+                    System.out.printf("Rule to be replaced: %d\n", replaceRule.getTransactionID());
                     if (coveredTransaction.contains(replaceRule.getTransactionID())) {
                         rule.removeClassCasesCovered(replaceRule.getTransactionClass());
                     } else {
-
                         replaceRule.getCRule().removeClassCasesCovered(replaceRule.getTransactionClass());
+                        System.out.printf("replaceRule.getCRule: %d\n", replaceRule.getCRule().getRuleID());
                         for (Rule rule1 : setOfCRulesWithHigherPrecedence) {
                             if (replaceRule.getCRule().getRuleID() == rule1.getRuleID()) {
                                 rule.removeClassCasesCovered(replaceRule.getTransactionClass());
@@ -247,10 +250,17 @@ public class Classifier{
                     }
                 }
 
+                //FIXME: needs to be changed since the errors of the rule
+                // depends on the current transaction; make a method in
+                // Classifier in order to get the error of the current rule
+                // based on the classDistr now
                 ruleErrors += rule.errorsOfRule();
+                System.out.printf("errors of rule: %d\n", ruleErrors);
                 classDistr = updateClassDistr(rule, classDistr);
                 var defaultClass = selectDefault(classDistr);
+                System.out.printf("default class is %d\n", defaultClass);
                 var defaultErrors = defErr(defaultClass, classDistr);
+                System.out.printf("default error is %d\n", defaultErrors);
                 var totalErrors = ruleErrors + defaultErrors;
                 ClassificationRule classificationRule = new ClassificationRule(rule, defaultClass, totalErrors);
                 classifierRules.add(classificationRule);

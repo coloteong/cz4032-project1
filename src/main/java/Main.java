@@ -1,5 +1,3 @@
-import java.io.*;
-import java.util.*;
 public class Main {
     public static void main(String[] args) throws Exception {
 
@@ -19,6 +17,6 @@ public class Main {
         classifier.start();
         classifier.findCRuleAndWRule(); 
         classifier.goThroughDataAgain();
-        classifier.chooseFinalRules();
+        var classifierRules = classifier.chooseFinalRules();
     }
 }

@@ -222,10 +222,11 @@ public class Classifier{
     }
 
     // stage 3
-    public void chooseFinalRules() {
+    public ArrayList<Rule> chooseFinalRules() {
    
         var classDistr = compClassDistri(transactionList);
         int ruleErrors = 0;
+        int totalErrors = 0;
         // line 3
         Collections.sort(setOfCRulesWithHigherPrecedence);
         System.out.printf("Set of C Rules with higher precedence: %d\n", setOfCRulesWithHigherPrecedence.size());
@@ -256,17 +257,25 @@ public class Classifier{
                 ruleErrors += rule.errorsOfRule();
                 // ruleErrors += errorsOfRule(classDistr, rule);
                 System.out.printf("errors of rule: %d\n", ruleErrors);
+                System.out.printf("Rule ID:%d, Rule Consequent:%d, Rule Confidence: %f, Rule Antecedents:", rule.getRuleID(), rule.getConsequent(), rule.getConfidence());
+                for (int items : rule.getAntecedent()) {
+                    System.out.printf("%d ", items);
+                }
+                System.out.printf("\n");
                 // there is a problem with classDistr
                 classDistr = updateClassDistr(rule, classDistr);
                 var defaultClass = selectDefault(classDistr);
                 System.out.printf("default class is %d\n", defaultClass);
                 var defaultErrors = defErr(defaultClass, classDistr);
                 System.out.printf("default error is %d\n", defaultErrors);
-                var totalErrors = ruleErrors + defaultErrors;
+                totalErrors += ruleErrors;
+                System.out.printf("total error is %d\n", totalErrors);
+                // TODO: everything from 267 onwards
                 ClassificationRule classificationRule = new ClassificationRule(rule, defaultClass, totalErrors);
                 classifierRules.add(classificationRule);
             }
         }
+
         int min = 9999;
         int lastClass = 0;
         // line 18
@@ -286,8 +295,9 @@ public class Classifier{
         for (int j = 0; j <= lastClass; j++) {
             finalClassifier.add(classifierRules.get(j).getRule());
         }
-        
 
+        return finalClassifier;
+        
     }
 
     // count the number of training cases in each class

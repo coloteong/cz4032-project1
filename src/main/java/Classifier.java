@@ -81,8 +81,10 @@ public class Classifier{
                 // case 3 comes here
                 // need to mark CRule
                     System.out.printf("Transaction %d is here\n", transaction.getTransactionID());
-                    setOfCRulesWithHigherPrecedence.add(transaction.getCRule());
-                    transaction.getCRule().markRule();
+                    if(!setOfCRulesWithHigherPrecedence.contains(transaction.getCRule())) {
+                        setOfCRulesWithHigherPrecedence.add(transaction.getCRule());
+                        transaction.getCRule().markRule();
+                    }
                 }            
             if ((sortedRuleArray.indexOf(transaction.getWRule()) < sortedRuleArray.indexOf(transaction.getCRule()) || transaction.getCRule() == null) && transaction.getWRule() != null){
                 // case 1 can also come here 
@@ -111,32 +113,32 @@ public class Classifier{
 
                     if (trans.getCRule() != null) {
 
-                        for (Rule rule : setOfCRules) {
-                            if (trans.getCRule().getRuleID() == rule.getRuleID()) {
-                                rule.removeClassCasesCovered(trans.getTransactionClass());
-                            }
-                        }
+                        // for (Rule rule : setOfCRules) {
+                        //     if (trans.getCRule().getRuleID() == rule.getRuleID()) {
+                        //         rule.removeClassCasesCovered(trans.getTransactionClass());
+                        //     }
+                        // }
 
-                        for (Rule rule : setOfCRulesWithHigherPrecedence) {
-                            if (trans.getCRule().getRuleID() == rule.getRuleID()) {
-                                rule.removeClassCasesCovered(trans.getTransactionClass());
-                            }
-                        }
+                        // for (Rule rule : setOfCRulesWithHigherPrecedence) {
+                        //     if (trans.getCRule().getRuleID() == rule.getRuleID()) {
+                        //         rule.removeClassCasesCovered(trans.getTransactionClass());
+                        //     }
+                        // }
 
                         trans.getCRule().removeClassCasesCovered(trans.getTransactionClass());
                     }
 
-                    for (Rule rule : setOfCRules) {
-                        if (trans.getWRule().getRuleID() == rule.getRuleID()) {
-                            trans.getWRule().addClassCasesCovered(trans.getTransactionClass());
-                        }
-                    }
+                    // for (Rule rule : setOfCRules) {
+                    //     if (trans.getWRule().getRuleID() == rule.getRuleID()) {
+                    //         trans.getWRule().addClassCasesCovered(trans.getTransactionClass());
+                    //     }
+                    // }
 
-                    for (Rule rule : setOfCRulesWithHigherPrecedence) {
-                        if (trans.getWRule().getRuleID() == rule.getRuleID()) {
-                            trans.getWRule().addClassCasesCovered(trans.getTransactionClass());
-                        }
-                    }
+                    // for (Rule rule : setOfCRulesWithHigherPrecedence) {
+                    //     if (trans.getWRule().getRuleID() == rule.getRuleID()) {
+                    //         trans.getWRule().addClassCasesCovered(trans.getTransactionClass());
+                    //     }
+                    // }
 
                     trans.getWRule().addClassCasesCovered(trans.getTransactionClass());
 
@@ -151,31 +153,31 @@ public class Classifier{
                             rule.addToReplace(replaceRule);
                             System.out.printf("Rule to Replace: %d\n", replaceRule.getCRule().getRuleID());
 
-                            for (Rule rule2 : setOfCRules) {
-                                if (rule.getRuleID() == rule2.getRuleID()) {
-                                    rule.addToReplace(replaceRule);
-                                }
-                            }
+                            // for (Rule rule2 : setOfCRules) {
+                            //     if (rule.getRuleID() == rule2.getRuleID()) {
+                            //         rule.addToReplace(replaceRule);
+                            //     }
+                            // }
 
-                            for (Rule rule2 : setOfCRulesWithHigherPrecedence) {
-                                if (rule.getRuleID() == rule2.getRuleID()) {
-                                    rule.addToReplace(replaceRule);
-                                }
-                            }
+                            // for (Rule rule2 : setOfCRulesWithHigherPrecedence) {
+                            //     if (rule.getRuleID() == rule2.getRuleID()) {
+                            //         rule.addToReplace(replaceRule);
+                            //     }
+                            // }
 
                         }
 
-                        for (Rule rule2 : setOfCRules) {
-                            if (rule.getRuleID() == rule2.getRuleID()) {
-                                rule2.addClassCasesCovered(trans.getTransactionClass());
-                            }
-                        }
+                        // for (Rule rule2 : setOfCRules) {
+                        //     if (rule.getRuleID() == rule2.getRuleID()) {
+                        //         rule2.addClassCasesCovered(trans.getTransactionClass());
+                        //     }
+                        // }
 
-                        for (Rule rule2 : setOfCRulesWithHigherPrecedence) {
-                            if (rule.getRuleID() == rule2.getRuleID()) {
-                                rule2.addClassCasesCovered(trans.getTransactionClass());
-                            }
-                        }
+                        // for (Rule rule2 : setOfCRulesWithHigherPrecedence) {
+                        //     if (rule.getRuleID() == rule2.getRuleID()) {
+                        //         rule2.addClassCasesCovered(trans.getTransactionClass());
+                        //     }
+                        // }
                         rule.addClassCasesCovered(trans.getTransactionClass());
                     }
                     for (Rule rule : wSet) {
@@ -226,6 +228,7 @@ public class Classifier{
         int ruleErrors = 0;
         // line 3
         Collections.sort(setOfCRulesWithHigherPrecedence);
+        System.out.printf("Set of C Rules with higher precedence: %d\n", setOfCRulesWithHigherPrecedence.size());
         // line 4
         for (Rule rule : setOfCRulesWithHigherPrecedence) {
             var ruleClass = rule.getConsequent();
@@ -309,13 +312,15 @@ public class Classifier{
         for (Entry<Integer, Integer> entry: classDistr.entrySet()) {
             var transactionClass = entry.getKey();
             var count = entry.getValue();
-
+            System.out.printf("Old Transaction Class:%d, Old Count:%d\n", transactionClass, count);
             if (rule.getClassCasesCovered().get(transactionClass) != null) {
                 newClassDistr.put(transactionClass, count - rule.getClassCasesCovered().get(transactionClass));
             }
             else {
                 newClassDistr.put(transactionClass, count);
             }
+            System.out.printf("New Transaction Class:%d, New Count:%d\n", transactionClass, newClassDistr.get(transactionClass));
+            
         }
         // for (Entry<Integer, Integer> entry: classCasesCovered.entrySet()) {
         //     var transactionClass = entry.getKey();

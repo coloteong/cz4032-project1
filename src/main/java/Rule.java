@@ -121,17 +121,17 @@ public class Rule implements Comparable<Rule>{
         // less than other, > 0 if this is supposed to be greater than 
         // other and 0 if they are supposed to be equal
         if (getConfidence() > other.getConfidence()) {
-            return 1;
+            return -1;
         } else if (getConfidence() == other.getConfidence()) {
             if (getSupport() > other.getSupport()) {
-                return 1;
+                return -1;
             } else if (getSupport() == other.getSupport()) {
                 if (ruleID < other.getRuleID() ) {
-                    return 1;
+                    return -1;
                 }
             }
         }
-        return -1;
+        return 1;
     }
 
     public void incrementRuleSupCount() {

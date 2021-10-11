@@ -25,7 +25,7 @@ public class Classifier{
     public void start() {
         Collections.sort(sortedRuleArray);
         for (Rule rule : sortedRuleArray) {
-            System.out.printf("Rule ID:%d\n", rule.getRuleID());
+            System.out.printf("Rule ID:%d, Rule Confidence:%f, Rule Support:%f\n", rule.getRuleID(), rule.getConfidence(), rule.getSupport());
         }
     }
     // CBA-CB M2 Stage 1
@@ -250,12 +250,10 @@ public class Classifier{
                     }
                 }
 
-                //FIXME: needs to be changed since the errors of the rule
-                // depends on the current transaction; make a method in
-                // Classifier in order to get the error of the current rule
-                // based on the classDistr now
                 ruleErrors += rule.errorsOfRule();
+                // ruleErrors += errorsOfRule(classDistr, rule);
                 System.out.printf("errors of rule: %d\n", ruleErrors);
+                // there is a problem with classDistr
                 classDistr = updateClassDistr(rule, classDistr);
                 var defaultClass = selectDefault(classDistr);
                 System.out.printf("default class is %d\n", defaultClass);
@@ -307,12 +305,24 @@ public class Classifier{
     private HashMap<Integer, Integer> updateClassDistr(Rule rule, HashMap<Integer, Integer> classDistr) {
         var newClassDistr = new HashMap<Integer, Integer>();
         var classCasesCovered = rule.getClassCasesCovered();
-        for (Entry<Integer, Integer> entry: classCasesCovered.entrySet()) {
+        System.out.printf("Size of classCasesCovered: %d\n", classCasesCovered.size());
+        for (Entry<Integer, Integer> entry: classDistr.entrySet()) {
             var transactionClass = entry.getKey();
             var count = entry.getValue();
-            var currCount = classDistr.get(transactionClass);
-            newClassDistr.put(transactionClass, currCount - count);
+
+            if (rule.getClassCasesCovered().get(transactionClass) != null) {
+                newClassDistr.put(transactionClass, count - rule.getClassCasesCovered().get(transactionClass));
+            }
+            else {
+                newClassDistr.put(transactionClass, count);
+            }
         }
+        // for (Entry<Integer, Integer> entry: classCasesCovered.entrySet()) {
+        //     var transactionClass = entry.getKey();
+        //     var count = entry.getValue();
+        //     var currCount = classDistr.get(transactionClass);
+        //     newClassDistr.put(transactionClass, currCount - count);
+        // }
     return newClassDistr;
     }
 
@@ -335,6 +345,7 @@ public class Classifier{
         int error = 0;
         for (Map.Entry<Integer, Integer> entry : classDistr.entrySet()) {
             if (entry.getKey() != defaultClass) {
+                System.out.printf("Class %d, num:%d\n", entry.getKey(), entry.getValue());
                 error += entry.getValue();
             }
         }

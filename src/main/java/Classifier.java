@@ -198,7 +198,7 @@ public class Classifier{
         var currTransaction = transactionList[specialTransaction.getTransactionID()];
         for (Rule cRule : setOfCRules) {
             // if the cRule has a higher precedence
-            if (cRule.compareTo(specialTransaction.getCRule()) > 0 || specialTransaction.getCRule() == null) {
+            if ( specialTransaction.getCRule() == null || cRule.compareTo(specialTransaction.getCRule()) > 0) {
                 var match = true;
                 // check if it wrongly classifies
                 for (int item : currTransaction.getTransactionItems()) {
@@ -226,6 +226,7 @@ public class Classifier{
    
         var classDistr = compClassDistri(transactionList);
         int ruleErrors = 0;
+        int ruleErrorsSoFar = 0;
         int totalErrors = 0;
         // line 3
         Collections.sort(setOfCRulesWithHigherPrecedence);
@@ -254,9 +255,11 @@ public class Classifier{
                     }
                 }
 
-                ruleErrors += rule.errorsOfRule();
+                ruleErrors = rule.errorsOfRule();
+                ruleErrorsSoFar += ruleErrors;
                 // ruleErrors += errorsOfRule(classDistr, rule);
                 System.out.printf("errors of rule: %d\n", ruleErrors);
+                System.out.printf("errors due to rules so far: %d\n", ruleErrorsSoFar);
                 System.out.printf("Rule ID:%d, Rule Consequent:%d, Rule Confidence: %f, Rule Antecedents:", rule.getRuleID(), rule.getConsequent(), rule.getConfidence());
                 for (int items : rule.getAntecedent()) {
                     System.out.printf("%d ", items);
@@ -268,7 +271,7 @@ public class Classifier{
                 System.out.printf("default class is %d\n", defaultClass);
                 var defaultErrors = defErr(defaultClass, classDistr);
                 System.out.printf("default error is %d\n", defaultErrors);
-                totalErrors += ruleErrors;
+                totalErrors = ruleErrorsSoFar + defaultErrors;
                 System.out.printf("total error is %d\n", totalErrors);
                 // TODO: everything from 267 onwards
                 ClassificationRule classificationRule = new ClassificationRule(rule, defaultClass, totalErrors);

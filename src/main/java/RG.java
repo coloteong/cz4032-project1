@@ -7,8 +7,8 @@ public class RG {
     // the number of transactions in the source file
     public static int numTransactions;
     public Transaction[] transactionList;
-    private double minSup = 0.03;
-    private double minConf = 0.1;
+    private double minSup = 0.01;
+    private double minConf = 0.5;
     // stores all the rules
     private ArrayList<Rule> ruleArray = new ArrayList<>();
 
@@ -146,6 +146,9 @@ public class RG {
         Set<List<Integer>> generatedRuleAntecedents = new HashSet<>();
 
         for (int i = 0; i < ruleArray.size(); i++) {
+            if (candidateRules.size() + ruleArray.size() > 10000) {
+                break;
+            }
                 
             Rule rule = ruleArray.get(i);
             var ruleAntecedents = rule.getAntecedent();
@@ -211,8 +214,8 @@ public class RG {
                     }
                 }
             }
+               
         }
-
         return candidateRules;
     }
     

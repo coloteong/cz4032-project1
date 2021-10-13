@@ -1,6 +1,12 @@
+import java.util.Scanner;
+
 public class Main {
     public static void main(String[] args) throws Exception {
 
+
+        Scanner sc = new Scanner(System.in);
+        System.out.println("CMAR or CBA? (0 or 1)");
+        var choice = sc.nextInt();
 
         Reader csvReader = new Reader();
         Transaction[] transactionList = csvReader.startReader();
@@ -13,10 +19,16 @@ public class Main {
             }
             System.out.println("");
         }
-        Classifier classifier = new Classifier(ruleArray, transactionList);
-        classifier.start();
-        classifier.findCRuleAndWRule(); 
-        classifier.goThroughDataAgain();
-        var classifierRules = classifier.chooseFinalRules();
+        if (choice == 1) {
+            Classifier classifier = new Classifier(ruleArray, transactionList);
+            classifier.start();
+            classifier.findCRuleAndWRule(); 
+            classifier.goThroughDataAgain();
+            var classifierRules = classifier.chooseFinalRules();
+        } else if (choice == 0) {
+            CMARClassifier cmarClassifier = new CMARClassifier(ruleArray, transactionList);
+            cmarClassifier.start();
+            cmarClassifier.findClassifier();
+        }
     }
 }

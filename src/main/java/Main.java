@@ -30,5 +30,6 @@ public class Main {
             cmarClassifier.start();
             cmarClassifier.findClassifier();
         }
+        sc.close();
     }
 }

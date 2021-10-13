@@ -29,40 +29,43 @@ public class CMARClassifier {
         int error = 0;
         for (Transaction transaction : transactionList) {
             System.out.printf("Transaction ID:%d \n", transaction.getTransactionID());
-            int classChosenByRules;
+            int classChosenByRules = -1;
             List<Rule> ruleSubset = findRules(transaction);
-            if (allSame(ruleSubset)) {
-                // we use the class 
-                classChosenByRules = ruleSubset.get(0).getConsequent();
-            } else {
-                // Map<Integer, List<Rule>> ruleGroups = new HashMap<>();
-                Map<Integer, Float> groupWeight = new HashMap<>();
-                for (Rule rule : ruleSubset) {
-                    // ruleGroups.get(rule.getConsequent()).add(rule);
-                    // calculate the max chi squared for each rule
-                    var currClass = rule.getConsequent();
-                    float maxChiSquared = calculateMaxChiSquared(rule);
-                    float chiSquared = calculateChiSquared(rule);
-                    float ruleValue = (chiSquared * chiSquared) / maxChiSquared;
+            if (!ruleSubset.isEmpty()) {
+                if (allSame(ruleSubset)) {
+                    // we use the class 
+                    classChosenByRules = ruleSubset.get(0).getConsequent();
+                } else {
+                    // Map<Integer, List<Rule>> ruleGroups = new HashMap<>();
+                    Map<Integer, Float> groupWeight = new HashMap<>();
+                    for (Rule rule : ruleSubset) {
+                        // ruleGroups.get(rule.getConsequent()).add(rule);
+                        // calculate the max chi squared for each rule
+                        var currClass = rule.getConsequent();
+                        float maxChiSquared = calculateMaxChiSquared(rule);
+                        float chiSquared = calculateChiSquared(rule);
+                        float ruleValue = (chiSquared * chiSquared) / maxChiSquared;
 
-                    if (!groupWeight.containsKey(rule.getConsequent())) {
-                        groupWeight.put(currClass, ruleValue);
-                    } else {
-                        groupWeight.put(currClass, groupWeight.get(currClass) + ruleValue);
+                        if (!groupWeight.containsKey(rule.getConsequent())) {
+                            groupWeight.put(currClass, ruleValue);
+                        } else {
+                            groupWeight.put(currClass, groupWeight.get(currClass) + ruleValue);
+                        }
                     }
-                }
 
-                Map.Entry<Integer, Float> maxEntry = null;
+                    Map.Entry<Integer, Float> maxEntry = null;
 
-                for (Map.Entry <Integer, Float> entry: groupWeight.entrySet()) {
-                    if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0) {
-                        maxEntry = entry;
+                    for (Map.Entry <Integer, Float> entry: groupWeight.entrySet()) {
+                        if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0) {
+                            maxEntry = entry;
+                        }
                     }
-                }
 
-                classChosenByRules = maxEntry.getKey();
+                    classChosenByRules = maxEntry.getKey();
+                }
             }
-            if (classChosenByRules != transaction.getTransactionClass()) {
+
+            if (classChosenByRules == -1 || classChosenByRules != transaction.getTransactionClass()) {
                 error++;
             }
 

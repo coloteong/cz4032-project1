@@ -279,17 +279,15 @@ public class Classifier{
             }
         }
 
-        int min = 9999;
+        int min = 99999;
         int lastClass = 0;
         // line 18
         for (int i = 0; i < classifierRules.size(); i++) {
             if (classifierRules.get(i).getTotalError() < min) {
                 min = classifierRules.get(i).getTotalError();
-            } else {
-                lastClass = i - 1;
-                break;
             }
         }
+        System.out.printf("Min Total Error:%d\n", min);
 
         // line 19
         finalDefaultClass = classifierRules.get(lastClass).getDefaultClass();

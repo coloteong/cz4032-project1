@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,6 +18,7 @@ public class CMARRG {
     public Transaction[] transactionList;
     private double minSup = 0.01;
     private double minConf = 0.5;
+    private int minThreshold = 3;
     // stores all the rules
     private ArrayList<Rule> ruleArray = new ArrayList<>();
 
@@ -128,45 +130,54 @@ public class CMARRG {
 
     private ArrayList<Rule> finalCMARPruning(ArrayList<Rule> ruleArray) {
         Collections.sort(ruleArray);
-        Transaction[] tempTransactions = transactionList;
-        ArrayList<Integer> coverCounts = new ArrayList<>();
-        for (int i = 0; i < tempTransactions.length; i++) {
-            coverCounts.add(0);
-        }
-        ArrayList<Rule> rulesCorrectlyClassify = new ArrayList<Rule>();
+        ArrayList<Transaction> tempTransactions = (ArrayList<Transaction>) Arrays.asList(transactionList);
+        // ArrayList<Integer> coverCounts = new ArrayList<>();
+        int[] coverCounts = new int[transactionList.length];
+        ArrayList<Rule> rulesCorrectlyClassify = new ArrayList<>();
 
-        while ((tempTransactions.length != 0) && (!ruleArray.isEmpty())) {
+        /// if they are the same size, there is nothing to prune
+        while ((!tempTransactions.isEmpty()) && (ruleArray.size() != rulesCorrectlyClassify.size())) {
+
             for (Rule rule : ruleArray) {
                 for (Transaction transaction : tempTransactions) {
-                    if (rule.getAntecedent() == transaction.getTransactionItems()) {
+                    // if (rule.getAntecedent() == transaction.getTransactionItems()) {
+                    boolean match = true;
+                    for (int ruleItem : rule.getAntecedent()) {
+                        if (!ArrayUtils.contains(transaction.getTransactionItems(), ruleItem)) {
+                            match = false;
+                        }
+                    }
+                    if (match) {
                         if (rule.getConsequent() == transaction.getTransactionClass()) {
                             rulesCorrectlyClassify.add(rule);
+                            coverCounts[transaction.getTransactionID()]++;
                         }
                     }
                 }
             }
-        }
-
-        for (Rule rule : rulesCorrectlyClassify) {
-            for (Transaction transaction : tempTransactions) {
-                if (rule.getAntecedent() == transaction.getTransactionItems()) {
-                    if (rule.getConsequent() == transaction.getTransactionClass()) {
-                        // think this might not work 
-                        Integer indexOfTransaction = java.util.Arrays.asList(tempTransactions).indexOf(transaction);
-                        coverCounts.set(indexOfTransaction, coverCounts.get(indexOfTransaction) + 1); 
-                    }
+            // data object if covercount is higher than threshold
+            for (int i = 0; i < coverCounts.length; i++) {
+                if (coverCounts[i] >= minThreshold) {
+                    tempTransactions.remove(i);
                 }
             }
         }
 
-        // TODO: remove data object if covercount is higher than threshold
+        return rulesCorrectlyClassify;
+    }
 
-    }
-/* 
-    private List<Rule> pruneCMARRules(List<Rule> ruleArray) {
-        return null;
-    }
- */
+        // for (Rule rule : rulesCorrectlyClassify) {
+        //     for (Transaction transaction : tempTransactions) {
+        //         if (rule.getAntecedent() == transaction.getTransactionItems()) {
+        //             if (rule.getConsequent() == transaction.getTransactionClass()) {
+        //                 // think this might not work 
+        //                 Integer indexOfTransaction = java.util.Arrays.asList(tempTransactions).indexOf(transaction);
+        //                 coverCounts.set(indexOfTransaction, coverCounts.get(indexOfTransaction) + 1); 
+        //             }
+        //         }
+        //     }
+        // }
+
     private ArrayList<Rule> createInitialRuleItems() {
         // generate all the rule items with one item on the antecedent
         // which is also frequent

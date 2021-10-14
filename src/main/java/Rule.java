@@ -2,6 +2,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.ArrayList;
+import java.lang.*;
 
 public class Rule implements Comparable<Rule>{
     private int ruleID;
@@ -61,7 +62,8 @@ public class Rule implements Comparable<Rule>{
     }
     
     public double getSupport() {
-        return ((double) ruleSupportCount / RG.numTransactions);
+        var numTransactions = Math.max(RG.numTransactions, CMARRG.numTransactions);
+        return ((double) ruleSupportCount / numTransactions);
     }
 
     public int[] getAntecedent() {

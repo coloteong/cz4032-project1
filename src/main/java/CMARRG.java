@@ -192,7 +192,7 @@ public class CMARRG {
         for (Transaction transaction : transactionList) {
             possibleClasses.add(transaction.getTransactionClass());
             for (int item : transaction.getTransactionItems()) {
-                System.out.println(item);
+                System.out.printf("Stupid Error:%d\n", item);
                 itemSet.add(item);
             }
         }
@@ -215,6 +215,7 @@ public class CMARRG {
                 classMap.put(numClass, possibleClass);
             }
             int max = Collections.max(classMap.keySet());
+            System.out.printf("numCond: %d, max: %d\n", numCond, max);
             Rule rule = new Rule(ruleAntecedent, classMap.get(max), numCond, max);
 
             System.out.printf("Antecedent:");

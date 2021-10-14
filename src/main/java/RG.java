@@ -81,7 +81,7 @@ public class RG {
         for (Transaction transaction : transactionList) {
             possibleClasses.add(transaction.getTransactionClass());
             for (int item : transaction.getTransactionItems()) {
-                System.out.println(item);
+                System.out.printf("Stupid Error: %d\n", item);
                 itemSet.add(item);
             }
         }

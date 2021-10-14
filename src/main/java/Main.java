@@ -10,7 +10,6 @@ public class Main {
 
         Reader csvReader = new Reader();
         Transaction[] transactionList = csvReader.startReader();
-
         if (choice == 1) {
             RG ruleGenerator = new RG(transactionList);
             var ruleArray = ruleGenerator.getRuleItems();
@@ -26,7 +25,6 @@ public class Main {
             classifier.findCRuleAndWRule(); 
             classifier.goThroughDataAgain();
             var classifierRules = classifier.chooseFinalRules();
-
         } else if (choice == 0) {
             CMARRG CMARRuleGenerator = new CMARRG(transactionList);
             var ruleArray = CMARRuleGenerator.getRuleItems();

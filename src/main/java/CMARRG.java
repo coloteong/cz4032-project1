@@ -20,9 +20,12 @@ public class CMARRG {
     // stores all the rules
     private ArrayList<Rule> ruleArray = new ArrayList<>();
 
+    private Map<Integer, Integer> classDistr = new HashMap<>();
+
     public CMARRG(Transaction[] transactionList) {
         this.transactionList = transactionList;
         numTransactions = transactionList.length;
+        classDistr = compClassDistri(transactionList);
     }
 
     public List<Rule> getRuleItems() {
@@ -67,27 +70,107 @@ public class CMARRG {
                 System.out.println("");
                 if (rule.getSupport() >= minSup) {
                     System.out.println("We are here");
-                    currRuleArray.add(rule);
+                    if (calculateChiSquared(rule) > 0 ){
+                        currRuleArray.add(rule);
+                    }
                 }
+            
             }
 
             currRuleArray = genRules(currRuleArray);
-            var prunedRuleArray = pruneCMARRules(currRuleArray);
+            /* var prunedRuleArray = pruneCMARRules(currRuleArray);
 
-            ruleArray.addAll(prunedRuleArray);
+            ruleArray.addAll(prunedRuleArray); */
             }
         ruleArray = finalCMARPruning(ruleArray);
         return ruleArray;
     }
+    private float calculateChiSquared(Rule rule) {
+        int grandTotal = transactionList.length;
+        // these are the observed values
+        int pAndC = rule.getRuleSupportCount();
+        int pAndNotC = (int) ((1 - rule.getConfidence()) * rule.getCondSupportCount());
+        int allWithC = classDistr.get(rule.getConsequent());
+        int notPAndC = allWithC - pAndC;
+        int notPAndNotC = grandTotal - pAndC - pAndNotC - notPAndC;
 
-    private ArrayList<Rule> finalCMARPruning(ArrayList<Rule> ruleArray) {
-        return null;
+        // calculate the marginal total
+        int rowOneMarginalTotal = pAndC + pAndNotC;
+        int rowTwoMarginalTotal = notPAndC + notPAndNotC;
+        int colOneMarginalTotal = pAndC + notPAndC;
+        int colTwoMarginalTotal = pAndNotC + notPAndNotC;
+
+        // calculate the expected values
+        float expectedPAndC =  ((float) rowOneMarginalTotal * colOneMarginalTotal) / grandTotal;
+        float expectedPAndNotC = ((float) rowOneMarginalTotal * colTwoMarginalTotal) / grandTotal;
+        float expectedNotPAndC = ((float) rowTwoMarginalTotal * colOneMarginalTotal) / grandTotal;
+        float expectedNotPAndNotC = ((float) rowTwoMarginalTotal * colTwoMarginalTotal) / grandTotal;
+
+        // calculate Chi Squared
+        var firstElement = Math.pow((pAndC - expectedPAndC), 2) / expectedPAndC;
+        var secondElement = Math.pow((notPAndC - expectedNotPAndC), 2) / expectedNotPAndC;
+        var thirdElement = Math.pow((pAndNotC - expectedPAndNotC), 2) / expectedPAndNotC;
+        var fourthElement = Math.pow((notPAndNotC - expectedNotPAndNotC), 2) / expectedNotPAndNotC;
+
+        return (float) (firstElement + secondElement + thirdElement + fourthElement);
     }
 
+    private HashMap<Integer, Integer> compClassDistri(Transaction[] transactionList) {
+        HashMap<Integer, Integer> classDistr = new HashMap<>();
+        for (Transaction transaction : transactionList) {
+            var transactionClass = transaction.getTransactionClass();
+            if (classDistr.get(transactionClass) == null) {
+                classDistr.put(transactionClass, 1);
+            } else {
+                classDistr.put(transactionClass, classDistr.get(transactionClass) + 1);
+            }
+        }
+        return classDistr;
+    }
+
+
+    private ArrayList<Rule> finalCMARPruning(ArrayList<Rule> ruleArray) {
+        Collections.sort(ruleArray);
+        Transaction[] tempTransactions = transactionList;
+        ArrayList<Integer> coverCounts = new ArrayList<>();
+        for (int i = 0; i < tempTransactions.length; i++) {
+            coverCounts.add(0);
+        }
+        ArrayList<Rule> rulesCorrectlyClassify = new ArrayList<Rule>();
+
+        while ((tempTransactions.length != 0) && (ruleArray.size() != 0)) {
+            for (Rule rule : ruleArray) {
+                for (Transaction transaction : tempTransactions) {
+                    if (rule.getAntecedent() == transaction.getTransactionItems()) {
+                        if (rule.getConsequent() == transaction.getTransactionClass()) {
+                            rulesCorrectlyClassify.add(rule);
+                        }
+
+                    }
+                }
+            }
+        }
+
+        for (Rule rule : rulesCorrectlyClassify) {
+            for (Transaction transaction : tempTransactions) {
+                if (rule.getAntecedent() == transaction.getTransactionItems()) {
+                    if (rule.getConsequent() == transaction.getTransactionClass()) {
+                        // think this might not work 
+                        Integer indexOfTransaction = tempTransactions.indexOf(transaction);
+                        coverCounts.set(indexOfTransaction, coverCounts.get(indexOfTransaction) + 1); 
+                    }
+                }
+            }
+        }
+
+        // TODO: remove data object if covercount is higher than threshold
+
+    }
+/* 
     private List<Rule> pruneCMARRules(List<Rule> ruleArray) {
         return null;
     }
-
+ */
     private ArrayList<Rule> createInitialRuleItems() {
         // generate all the rule items with one item on the antecedent
         // which is also frequent

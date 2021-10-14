@@ -70,17 +70,14 @@ public class CMARRG {
                 System.out.println("");
                 if (rule.getSupport() >= minSup) {
                     System.out.println("We are here");
-                    if (calculateChiSquared(rule) > 0 ){
-                        currRuleArray.add(rule);
-                    }
                 }
             
             }
 
             currRuleArray = genRules(currRuleArray);
-            /* var prunedRuleArray = pruneCMARRules(currRuleArray);
+            // var prunedRuleArray = pruneCMARRules(currRuleArray);
 
-            ruleArray.addAll(prunedRuleArray); */
+            ruleArray.addAll(currRuleArray);
             }
         ruleArray = finalCMARPruning(ruleArray);
         return ruleArray;
@@ -138,14 +135,13 @@ public class CMARRG {
         }
         ArrayList<Rule> rulesCorrectlyClassify = new ArrayList<Rule>();
 
-        while ((tempTransactions.length != 0) && (ruleArray.size() != 0)) {
+        while ((tempTransactions.length != 0) && (!ruleArray.isEmpty())) {
             for (Rule rule : ruleArray) {
                 for (Transaction transaction : tempTransactions) {
                     if (rule.getAntecedent() == transaction.getTransactionItems()) {
                         if (rule.getConsequent() == transaction.getTransactionClass()) {
                             rulesCorrectlyClassify.add(rule);
                         }
-
                     }
                 }
             }
@@ -156,7 +152,7 @@ public class CMARRG {
                 if (rule.getAntecedent() == transaction.getTransactionItems()) {
                     if (rule.getConsequent() == transaction.getTransactionClass()) {
                         // think this might not work 
-                        Integer indexOfTransaction = tempTransactions.indexOf(transaction);
+                        Integer indexOfTransaction = java.util.Arrays.asList(tempTransactions).indexOf(transaction);
                         coverCounts.set(indexOfTransaction, coverCounts.get(indexOfTransaction) + 1); 
                     }
                 }
@@ -346,7 +342,9 @@ public class CMARRG {
                     }
                 }
                 if (willAdd) {
-                    currRuleArray.add(rule);
+                    if (calculateChiSquared(rule) > 0 ){
+                        currRuleArray.add(rule);
+                    }
                 }
             }
         }

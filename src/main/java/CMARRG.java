@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.primitives.Ints;
+
 import org.apache.commons.lang3.ArrayUtils;
-import org.netlib.util.booleanW;
-import org.netlib.util.intW;
 
 public class CMARRG {
     
@@ -130,13 +130,15 @@ public class CMARRG {
 
     private ArrayList<Rule> finalCMARPruning(ArrayList<Rule> ruleArray) {
         Collections.sort(ruleArray);
-        ArrayList<Transaction> tempTransactions = (ArrayList<Transaction>) Arrays.asList(transactionList);
+        List<Transaction> tempTransactions = new ArrayList<>();
+        for (Transaction transaction : transactionList) {
+            tempTransactions.add(transaction);
+        }
         // ArrayList<Integer> coverCounts = new ArrayList<>();
         int[] coverCounts = new int[transactionList.length];
         ArrayList<Rule> rulesCorrectlyClassify = new ArrayList<>();
 
-        /// if they are the same size, there is nothing to prune
-        while ((!tempTransactions.isEmpty()) && (ruleArray.size() != rulesCorrectlyClassify.size())) {
+        // if they are the same size, there is nothing to prune
 
             for (Rule rule : ruleArray) {
                 for (Transaction transaction : tempTransactions) {
@@ -145,12 +147,15 @@ public class CMARRG {
                     for (int ruleItem : rule.getAntecedent()) {
                         if (!ArrayUtils.contains(transaction.getTransactionItems(), ruleItem)) {
                             match = false;
+                            break;
                         }
                     }
                     if (match) {
                         if (rule.getConsequent() == transaction.getTransactionClass()) {
-                            rulesCorrectlyClassify.add(rule);
-                            coverCounts[transaction.getTransactionID()]++;
+                            if (!rulesCorrectlyClassify.contains(rule)) {
+                                rulesCorrectlyClassify.add(rule);
+                                coverCounts[transaction.getTransactionID()]++;
+                            }
                         }
                     }
                 }
@@ -161,7 +166,6 @@ public class CMARRG {
                     tempTransactions.remove(i);
                 }
             }
-        }
 
         return rulesCorrectlyClassify;
     }

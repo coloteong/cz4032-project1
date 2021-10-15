@@ -109,14 +109,15 @@ public class CMARClassifier {
     private float calculateMaxChiSquared(Rule rule) {
         float supP = rule.getCondSupportCount();
         float supC = classDistr.get(rule.getConsequent());
-        var t = transactionList.length;
+        var t = Main.trainTransactionList.length;
+        System.out.printf("supP: %f, supC: %f, t: %d\n", supC, supP, t);
         return (float) (Math.pow(Math.min(supC, supP) - ((supP * supC) / t), 2) * t * calculateE(rule));
     }
 
     private float calculateE(Rule rule) {
         float supP = rule.getCondSupportCount();
         float supC = classDistr.get(rule.getConsequent());
-        var t = transactionList.length;
+        var t = Main.trainTransactionList.length;
         float firstElement = 1 / (supP * supC);
         float secondElement = 1 / (supP * (t - supC));
         float thirdElement = 1 / ((t - supP) * supC);

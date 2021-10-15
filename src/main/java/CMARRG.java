@@ -6,7 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.*;
 
+import com.google.common.collect.Multiset.Entry;
 import com.google.common.primitives.Ints;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -107,11 +109,7 @@ public class CMARRG {
             tempTransactions.add(transaction);
         }
         // ArrayList<Integer> coverCounts = new ArrayList<>();
-        // ArrayList<Integer> coverCounts = new ArrayList<Integer>(transactionList.length);
-        ArrayList<Integer> coverCounts = new ArrayList<>();
-        for (int i = 0; i < transactionList.length; i++) {
-            coverCounts.add(0);
-        }
+        Map<Integer, Integer> coverCounts = new HashMap<>(transactionList.length);
         ArrayList<Rule> rulesCorrectlyClassify = new ArrayList<>();
 
         // if they are the same size, there is nothing to prune
@@ -130,20 +128,39 @@ public class CMARRG {
                         if (rule.getConsequent() == transaction.getTransactionClass()) {
                             if (!rulesCorrectlyClassify.contains(rule)) {
                                 rulesCorrectlyClassify.add(rule);
-                                coverCounts.set(transaction.getTransactionID(), coverCounts.get(transaction.getTransactionID()) + 1);
+                            }
+
+                            if (coverCounts.containsKey(transaction.getTransactionID())) {
+                                coverCounts.put(transaction.getTransactionID(), coverCounts.get(transaction.getTransactionID()));
+                            } else {
+                                coverCounts.put(transaction.getTransactionClass(), 1);
                             }
                         }
                     }
                 }
             }
-            // data object if covercount is higher than threshold
-            for (int i = 0; i < coverCounts.size(); i++) {
-                if (coverCounts.get(i) >= minThreshold) {
-                    tempTransactions.remove(i);
-                    coverCounts.remove(i);
-                    i--;
+            // // data object if covercount is higher than threshold
+            // for (int i = 0; i < coverCounts.size(); i++) {
+            //     if (coverCounts.get(i) >= minThreshold) {
+            //         tempTransactions.remove(i);
+            //         coverCounts.remove(i);
+            //         i--;
+            //     }
+            // }
+
+            for (java.util.Map.Entry<Integer, Integer> entry : coverCounts.entrySet()) {
+                if (entry.getValue() >= minThreshold) {
+                    coverCounts.remove(entry.getKey());
+                    for (Transaction transaction : tempTransactions) {
+                        if (transaction.getTransactionID() == entry.getKey()) {
+                            tempTransactions.remove(transaction);
+                            break;
+                        }
+                    }
                 }
             }
+
+
 
         return rulesCorrectlyClassify;
     }

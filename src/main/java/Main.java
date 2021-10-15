@@ -3,6 +3,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 public class Main {
 
     public static Transaction[] trainTransactionList;
@@ -32,6 +34,8 @@ public class Main {
             classifier.findCRuleAndWRule(); 
             classifier.goThroughDataAgain();
             var classifierRules = classifier.chooseFinalRules();
+            goThroughTestWithCBA(classifierRules);
+            
         } else if (choice == 0) {
             CMARRG CMARRuleGenerator = new CMARRG(trainTransactionList);
             var ruleArray = CMARRuleGenerator.getRuleItems();
@@ -62,5 +66,30 @@ public class Main {
         for (int i = trainSize; i < transactionArrayList.size(); i++) {
             testTransactionList[i - trainSize] = transactionArrayList.get(i);
         }
+    }
+
+    private static void goThroughTestWithCBA(List<Rule> CBARules) {
+        int testError = 0;
+        for (Transaction transaction : testTransactionList) {
+            var transactionItems = transaction.getTransactionItems();
+            var classChosen = Classifier.finalDefaultClass;
+            for (Rule rule : CBARules) {
+                var match = true;
+                for (int i : rule.getAntecedent()) {
+                    if (!ArrayUtils.contains(transactionItems, i)) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) {
+                    classChosen = rule.getConsequent();
+                }
+            }
+
+            if (classChosen != transaction.getTransactionClass()) {
+                testError++;
+            }
+        }
+        System.out.printf("test error:%d",testError);
     }
 }

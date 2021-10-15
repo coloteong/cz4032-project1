@@ -77,7 +77,7 @@ public class CMARClassifier {
     }
     
     private float calculateChiSquared(Rule rule) {
-        int grandTotal = transactionList.length;
+        int grandTotal = Main.trainTransactionList.length;
         // these are the observed values
         int pAndC = rule.getRuleSupportCount();
         int pAndNotC = (int) ((1 - rule.getConfidence()) * rule.getCondSupportCount());

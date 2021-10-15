@@ -15,7 +15,7 @@ public class Classifier{
     // this is set C in the paper
     private ArrayList<ClassificationRule> classifierRules = new ArrayList<>();
     private ArrayList<Rule> finalClassifier = new ArrayList<>();
-    private int finalDefaultClass;
+    public static int finalDefaultClass;
 
     public Classifier(List<Rule> ruleArray, Transaction[] transactionList) {
         sortedRuleArray = ruleArray;
@@ -112,34 +112,8 @@ public class Classifier{
                 if (trans.getWRule().getCoveredCasesCorrectly()) {
 
                     if (trans.getCRule() != null) {
-
-                        // for (Rule rule : setOfCRules) {
-                        //     if (trans.getCRule().getRuleID() == rule.getRuleID()) {
-                        //         rule.removeClassCasesCovered(trans.getTransactionClass());
-                        //     }
-                        // }
-
-                        // for (Rule rule : setOfCRulesWithHigherPrecedence) {
-                        //     if (trans.getCRule().getRuleID() == rule.getRuleID()) {
-                        //         rule.removeClassCasesCovered(trans.getTransactionClass());
-                        //     }
-                        // }
-
                         trans.getCRule().removeClassCasesCovered(trans.getTransactionClass());
                     }
-
-                    // for (Rule rule : setOfCRules) {
-                    //     if (trans.getWRule().getRuleID() == rule.getRuleID()) {
-                    //         trans.getWRule().addClassCasesCovered(trans.getTransactionClass());
-                    //     }
-                    // }
-
-                    // for (Rule rule : setOfCRulesWithHigherPrecedence) {
-                    //     if (trans.getWRule().getRuleID() == rule.getRuleID()) {
-                    //         trans.getWRule().addClassCasesCovered(trans.getTransactionClass());
-                    //     }
-                    // }
-
                     trans.getWRule().addClassCasesCovered(trans.getTransactionClass());
 
                 } else {
@@ -148,36 +122,10 @@ public class Classifier{
                     for (Rule rule : wSet) {
                         System.out.printf("Rule ID: %d\n", rule.getRuleID());
                         if (trans.getCRule() != null) {
-
                             SpecialRule replaceRule = new SpecialRule(trans.getTransactionID(), trans.getTransactionClass(), trans.getCRule());
                             rule.addToReplace(replaceRule);
                             System.out.printf("Rule to Replace: %d\n", replaceRule.getCRule().getRuleID());
-
-                            // for (Rule rule2 : setOfCRules) {
-                            //     if (rule.getRuleID() == rule2.getRuleID()) {
-                            //         rule.addToReplace(replaceRule);
-                            //     }
-                            // }
-
-                            // for (Rule rule2 : setOfCRulesWithHigherPrecedence) {
-                            //     if (rule.getRuleID() == rule2.getRuleID()) {
-                            //         rule.addToReplace(replaceRule);
-                            //     }
-                            // }
-
                         }
-
-                        // for (Rule rule2 : setOfCRules) {
-                        //     if (rule.getRuleID() == rule2.getRuleID()) {
-                        //         rule2.addClassCasesCovered(trans.getTransactionClass());
-                        //     }
-                        // }
-
-                        // for (Rule rule2 : setOfCRulesWithHigherPrecedence) {
-                        //     if (rule.getRuleID() == rule2.getRuleID()) {
-                        //         rule2.addClassCasesCovered(trans.getTransactionClass());
-                        //     }
-                        // }
                         rule.addClassCasesCovered(trans.getTransactionClass());
                     }
                     for (Rule rule : wSet) {
@@ -279,22 +227,24 @@ public class Classifier{
             }
         }
 
-        int min = 99999;
-        int lastClass = 0;
+        int minError = 99999;
+        int min = 0;
+
         // line 18
         for (int i = 0; i < classifierRules.size(); i++) {
-            if (classifierRules.get(i).getTotalError() < min) {
-                min = classifierRules.get(i).getTotalError();
+            if (classifierRules.get(i).getTotalError() < minError) {
+                minError = classifierRules.get(i).getTotalError();
+                min = i;
             }
         }
-        System.out.printf("Min Total Error:%d\n", min);
+        System.out.printf("Min Total Error:%d\n", minError);
 
         // line 19
-        finalDefaultClass = classifierRules.get(lastClass).getDefaultClass();
+        finalDefaultClass = classifierRules.get(min).getDefaultClass();
         // not sure how to add it to the end of C
         // TODO #11
-        for (int j = 0; j <= lastClass; j++) {
-            finalClassifier.add(classifierRules.get(j).getRule());
+        for (int i = 0; i <= min; i++) {
+            finalClassifier.add(classifierRules.get(i).getRule());
         }
 
         return finalClassifier;

@@ -57,7 +57,7 @@ public class Main {
     private static void trainTestSplit(Transaction[] transactionList) {
         List<Transaction> transactionArrayList = Arrays.asList(transactionList);
         Collections.shuffle(transactionArrayList);
-        int trainSize = (int) (0.7 * transactionArrayList.size());
+        int trainSize = (int) (0.8 * transactionArrayList.size());
         trainTransactionList = new Transaction[trainSize];
         testTransactionList = new Transaction[transactionArrayList.size() - trainSize];
         for (int i = 0; i < trainSize; i++) {
@@ -90,6 +90,6 @@ public class Main {
                 testError++;
             }
         }
-        System.out.printf("test error:%d",testError);
+        System.out.printf("Test transaction length: %d, test error:%d",testTransactionList.length, testError);
     }
 }

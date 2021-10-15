@@ -71,8 +71,7 @@ public class CMARClassifier {
             if (classChosenByRules == -1 || classChosenByRules != transaction.getTransactionClass()) {
                 error++;
             }
-
-            System.out.printf("Current Error:%d\n", error);
+            System.out.printf("Test Transactions Length:%d, Current Error:%d\n", transactionList.length, error);
         }
     }
     

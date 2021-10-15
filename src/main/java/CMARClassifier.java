@@ -35,33 +35,36 @@ public class CMARClassifier {
                 if (allSame(ruleSubset)) {
                     // we use the class 
                     classChosenByRules = ruleSubset.get(0).getConsequent();
+                    System.out.printf("All rules are the same. The class is %d\n", classChosenByRules);
                 } else {
-                    // Map<Integer, List<Rule>> ruleGroups = new HashMap<>();
                     Map<Integer, Float> groupWeight = new HashMap<>();
                     for (Rule rule : ruleSubset) {
-                        // ruleGroups.get(rule.getConsequent()).add(rule);
                         // calculate the max chi squared for each rule
                         var currClass = rule.getConsequent();
                         float maxChiSquared = calculateMaxChiSquared(rule);
+                        System.out.printf("Max Chi Squared: %f\n", maxChiSquared);
                         float chiSquared = calculateChiSquared(rule);
+                        System.out.printf("Chi Squared: %f\n", chiSquared);
                         float ruleValue = (chiSquared * chiSquared) / maxChiSquared;
+                        System.out.printf("rule value: %f\n", ruleValue);
 
-                        if (!groupWeight.containsKey(rule.getConsequent())) {
+                        if (!groupWeight.containsKey(currClass)) {
                             groupWeight.put(currClass, ruleValue);
+                            System.out.printf("just put currClass: %d, currClass weight here:%f\n", currClass, groupWeight.get(currClass));
                         } else {
+                            System.out.printf("currClass: %d, currClass weight here:%f\n", currClass, groupWeight.get(currClass));
                             groupWeight.put(currClass, groupWeight.get(currClass) + ruleValue);
+                            System.out.printf("currClass: %d, currClass weight after addition:%f\n", currClass, groupWeight.get(currClass));
                         }
                     }
-
                     Map.Entry<Integer, Float> maxEntry = null;
-
                     for (Map.Entry <Integer, Float> entry: groupWeight.entrySet()) {
                         if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0) {
                             maxEntry = entry;
                         }
                     }
-
                     classChosenByRules = maxEntry.getKey();
+                    System.out.printf("class chosen by rules:%d\n", classChosenByRules);
                 }
             }
 
@@ -135,8 +138,8 @@ public class CMARClassifier {
         return allSame;
     }
 
-    public List<Rule> findRules(Transaction transaction) {
-        List<Rule> matchedRule = new ArrayList<>();
+    public ArrayList<Rule> findRules(Transaction transaction) {
+        ArrayList<Rule> matchedRule = new ArrayList<>();
         var transactionItems = transaction.getTransactionItems();
         for (Rule rule : sortedRuleArray) {
             var match = true;
@@ -149,7 +152,7 @@ public class CMARClassifier {
                 matchedRule.add(rule);
             }
         }
-
+        System.out.printf("matched rules: %d\n", matchedRule.size());
         return matchedRule;
     }
 

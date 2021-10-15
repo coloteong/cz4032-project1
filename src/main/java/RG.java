@@ -146,7 +146,7 @@ public class RG {
         Set<List<Integer>> generatedRuleAntecedents = new HashSet<>();
 
         for (int i = 0; i < ruleArray.size(); i++) {
-            if (candidateRules.size() + ruleArray.size() > 10000) {
+            if (candidateRules.size() + ruleArray.size() > 60000) {
                 break;
             }
                 
@@ -170,14 +170,14 @@ public class RG {
 
                 if (rule.getConsequent() == rule2.getConsequent()) {
                     for (int k = 0; k < rule2Antecedents.length; k++) {
-                        System.out.printf("rule 2 antecedents : %d \n", rule2Antecedents[k]);
+                        // System.out.printf("rule 2 antecedents : %d \n", rule2Antecedents[k]);
                         if (!ArrayUtils.contains(newRuleAntecedents, rule2Antecedents[k])) {
                             contains = false;
                             nDiff++;
                         }
                     }
 
-                    System.out.printf("nDiff = %d\n", nDiff);
+                    // System.out.printf("nDiff = %d\n", nDiff);
 
                     if (!contains) {
                         if (nDiff == 1) {
@@ -190,17 +190,17 @@ public class RG {
                                         List<Integer> generatedAntecedent = Ints.asList(newRuleAntecedents);
                                         if(!generatedRuleAntecedents.contains(generatedAntecedent)) {
                                             Rule biggerRule = new Rule(newRuleAntecedents, rule2.getConsequent());
-                                            System.out.printf("Antecedants of biggerRule: ");
-                                            for (int item1 : biggerRule.getAntecedent()) {
-                                                System.out.printf("%d, ", item1);
-                                            }
-                                            System.out.printf("\n");
-                                            System.out.printf("Class of biggerRule: %d", biggerRule.getConsequent());
-                                            System.out.println("Antecedents of the New Rule");
-                                            for (int item : newRuleAntecedents) {
-                                                System.out.printf("%d, ", item);
-                                            }
-                                            System.out.printf("\n");
+                                            // System.out.printf("Antecedants of biggerRule: ");
+                                            // for (int item1 : biggerRule.getAntecedent()) {
+                                            //     System.out.printf("%d, ", item1);
+                                            // }
+                                            // System.out.printf("\n");
+                                            // System.out.printf("Class of biggerRule: %d", biggerRule.getConsequent());
+                                            // System.out.println("Antecedents of the New Rule");
+                                            // for (int item : newRuleAntecedents) {
+                                            //     System.out.printf("%d, ", item);
+                                            // }
+                                            // System.out.printf("\n");
                                             generatedRuleAntecedents.add(generatedAntecedent);
                                             candidateRules.add(biggerRule);
                                             System.out.printf("Generated rule number: %d", count++);

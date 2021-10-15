@@ -17,8 +17,8 @@ public class CMARRG {
     public static int numTransactions;
     public Transaction[] transactionList;
     private double minSup = 0.01;
-    private double minConf = 0.5;
-    private int minThreshold = 3;
+    private double minConf = 0.50;
+    private int minThreshold = 4;
     // stores all the rules
     private ArrayList<Rule> ruleArray = new ArrayList<>();
 
@@ -49,7 +49,7 @@ public class CMARRG {
             for (Rule rule : candidateRules) {
                 System.out.printf("Rule ID: %d, Rule Consequent: %d, Rule Antecedent: ", rule.getRuleID(), rule.getConsequent());
                 for (int antecedentItem : rule.getAntecedent()) {
-                    System.out.printf("%d", antecedentItem);
+                    System.out.printf("%d, ", antecedentItem);
                 }
                 System.out.println("");
             }
@@ -72,6 +72,7 @@ public class CMARRG {
                 System.out.println("");
                 if (rule.getSupport() >= minSup) {
                     System.out.println("We are here");
+                    currRuleArray.add(rule);
                 }
             
             }
@@ -83,35 +84,6 @@ public class CMARRG {
             }
         ruleArray = finalCMARPruning(ruleArray);
         return ruleArray;
-    }
-    private float calculateChiSquared(Rule rule) {
-        int grandTotal = transactionList.length;
-        // these are the observed values
-        int pAndC = rule.getRuleSupportCount();
-        int pAndNotC = (int) ((1 - rule.getConfidence()) * rule.getCondSupportCount());
-        int allWithC = classDistr.get(rule.getConsequent());
-        int notPAndC = allWithC - pAndC;
-        int notPAndNotC = grandTotal - pAndC - pAndNotC - notPAndC;
-
-        // calculate the marginal total
-        int rowOneMarginalTotal = pAndC + pAndNotC;
-        int rowTwoMarginalTotal = notPAndC + notPAndNotC;
-        int colOneMarginalTotal = pAndC + notPAndC;
-        int colTwoMarginalTotal = pAndNotC + notPAndNotC;
-
-        // calculate the expected values
-        float expectedPAndC =  ((float) rowOneMarginalTotal * colOneMarginalTotal) / grandTotal;
-        float expectedPAndNotC = ((float) rowOneMarginalTotal * colTwoMarginalTotal) / grandTotal;
-        float expectedNotPAndC = ((float) rowTwoMarginalTotal * colOneMarginalTotal) / grandTotal;
-        float expectedNotPAndNotC = ((float) rowTwoMarginalTotal * colTwoMarginalTotal) / grandTotal;
-
-        // calculate Chi Squared
-        var firstElement = Math.pow((pAndC - expectedPAndC), 2) / expectedPAndC;
-        var secondElement = Math.pow((notPAndC - expectedNotPAndC), 2) / expectedNotPAndC;
-        var thirdElement = Math.pow((pAndNotC - expectedPAndNotC), 2) / expectedPAndNotC;
-        var fourthElement = Math.pow((notPAndNotC - expectedNotPAndNotC), 2) / expectedNotPAndNotC;
-
-        return (float) (firstElement + secondElement + thirdElement + fourthElement);
     }
 
     private HashMap<Integer, Integer> compClassDistri(Transaction[] transactionList) {
@@ -135,7 +107,11 @@ public class CMARRG {
             tempTransactions.add(transaction);
         }
         // ArrayList<Integer> coverCounts = new ArrayList<>();
-        int[] coverCounts = new int[transactionList.length];
+        // ArrayList<Integer> coverCounts = new ArrayList<Integer>(transactionList.length);
+        ArrayList<Integer> coverCounts = new ArrayList<>();
+        for (int i = 0; i < transactionList.length; i++) {
+            coverCounts.add(0);
+        }
         ArrayList<Rule> rulesCorrectlyClassify = new ArrayList<>();
 
         // if they are the same size, there is nothing to prune
@@ -154,33 +130,23 @@ public class CMARRG {
                         if (rule.getConsequent() == transaction.getTransactionClass()) {
                             if (!rulesCorrectlyClassify.contains(rule)) {
                                 rulesCorrectlyClassify.add(rule);
-                                coverCounts[transaction.getTransactionID()]++;
+                                coverCounts.set(transaction.getTransactionID(), coverCounts.get(transaction.getTransactionID()) + 1);
                             }
                         }
                     }
                 }
             }
             // data object if covercount is higher than threshold
-            for (int i = 0; i < coverCounts.length; i++) {
-                if (coverCounts[i] >= minThreshold) {
+            for (int i = 0; i < coverCounts.size(); i++) {
+                if (coverCounts.get(i) >= minThreshold) {
                     tempTransactions.remove(i);
+                    coverCounts.remove(i);
+                    i--;
                 }
             }
 
         return rulesCorrectlyClassify;
     }
-
-        // for (Rule rule : rulesCorrectlyClassify) {
-        //     for (Transaction transaction : tempTransactions) {
-        //         if (rule.getAntecedent() == transaction.getTransactionItems()) {
-        //             if (rule.getConsequent() == transaction.getTransactionClass()) {
-        //                 // think this might not work 
-        //                 Integer indexOfTransaction = java.util.Arrays.asList(tempTransactions).indexOf(transaction);
-        //                 coverCounts.set(indexOfTransaction, coverCounts.get(indexOfTransaction) + 1); 
-        //             }
-        //         }
-        //     }
-        // }
 
     private ArrayList<Rule> createInitialRuleItems() {
         // generate all the rule items with one item on the antecedent
@@ -258,7 +224,7 @@ public class CMARRG {
         Set<List<Integer>> generatedRuleAntecedents = new HashSet<>();
 
         for (int i = 0; i < ruleArray.size(); i++) {
-            if (candidateRules.size() + ruleArray.size() > 10000) {
+            if (candidateRules.size() + ruleArray.size() > 60000) {
                 break;
             }
                 
@@ -307,7 +273,7 @@ public class CMARRG {
                                                 System.out.printf("%d, ", item1);
                                             }
                                             System.out.printf("\n");
-                                            System.out.printf("Class of biggerRule: %d", biggerRule.getConsequent());
+                                            System.out.printf("Class of biggerRule: %d\n", biggerRule.getConsequent());
                                             System.out.println("Antecedents of the New Rule");
                                             for (int item : newRuleAntecedents) {
                                                 System.out.printf("%d, ", item);
@@ -332,38 +298,80 @@ public class CMARRG {
     }
 
     private ArrayList<Rule> genRules(List<Rule> ruleArray) {
+        System.out.println("We are at genRules");
         var bigRuleArray = this.ruleArray;
+        System.out.printf("genRules rule array size:%d, bigRuleArray size:%d\n", ruleArray.size(), bigRuleArray.size());
         List<Rule> currRuleArray = new ArrayList<>();
         for (Rule rule : ruleArray) {
-            System.out.printf("Antecedent: %d, Consequent: %d, Confidence: %f \n", rule.getAntecedent()[0], rule.getConsequent(), rule.getConfidence());
-            if (rule.getConfidence() > minConf) {
-                boolean willAdd = true;
-                var ruleLHS = rule.getAntecedent();
-                // first CMAR Pruning is done here
-                Collections.sort(bigRuleArray);
-                for (Rule rule2 : bigRuleArray) {
-                    var rule2LHS = rule2.getAntecedent();
-                    boolean match = true;
-                    for (int ruleItem : ruleLHS) {
-                        if (!ArrayUtils.contains(rule2LHS, ruleItem)) {
-                            match = false;
-                            break;
-                        }
-                    }
-                    if (match) {
-                        if (rule2.compareTo(rule) == -1) {
-                            willAdd = false;
-                            break;
-                        }
+            System.out.printf("ID: %d, Consequent: %d, Support: %f, Confidence: %f, Antecedent: ", rule.getRuleID(), rule.getConsequent(), rule.getSupport(), rule.getConfidence());
+            for (int ruleItem : rule.getAntecedent()) {
+                System.out.printf("%d, ", ruleItem);
+            }
+            System.out.println("");
+            boolean willAdd = true;
+            var ruleLHS = rule.getAntecedent();
+            // first CMAR Pruning is done here
+            Collections.sort(bigRuleArray);
+            for (Rule rule2 : bigRuleArray) {
+            // System.out.printf("2 - ID: %d, Consequent: %d, Support: %f, Confidence: %f, Antecedent: ", rule2.getRuleID(), rule2.getConsequent(), rule2.getSupport(), rule2.getConfidence());
+            // for (int ruleItem : rule2.getAntecedent()) {
+            //     System.out.printf("%d, ", ruleItem);
+            // }
+            // System.out.println("");
+                var rule2LHS = rule2.getAntecedent();
+                boolean match = true;
+                for (int ruleItem : rule2LHS) {
+                    if (!ArrayUtils.contains(ruleLHS, ruleItem)) {
+                        match = false;
+                        break;
                     }
                 }
-                if (willAdd) {
-                    if (calculateChiSquared(rule) > 0 ){
+                if (match) {
+                    if (rule2.compareTo(rule) < 0) {
+                        willAdd = false;
+                        break;
+                    }
+                }
+            }
+            if (willAdd) {
+                System.out.printf("Chi Squared of Rule: %f\n", calculateChiSquared(rule));
+                if (calculateChiSquared(rule) > 3.84146) {
+                    if (rule.getConfidence() > minConf) {
                         currRuleArray.add(rule);
                     }
                 }
             }
         }
         return (ArrayList<Rule>) currRuleArray;
+    }
+
+    private float calculateChiSquared(Rule rule) {
+        int grandTotal = transactionList.length;
+        // these are the observed values
+        int pAndC = rule.getRuleSupportCount();
+        int pAndNotC = (int) ((1 - rule.getConfidence()) * rule.getCondSupportCount());
+        int allWithC = classDistr.get(rule.getConsequent());
+        int notPAndC = allWithC - pAndC;
+        int notPAndNotC = grandTotal - pAndC - pAndNotC - notPAndC;
+
+        // calculate the marginal total
+        int rowOneMarginalTotal = pAndC + pAndNotC;
+        int rowTwoMarginalTotal = notPAndC + notPAndNotC;
+        int colOneMarginalTotal = pAndC + notPAndC;
+        int colTwoMarginalTotal = pAndNotC + notPAndNotC;
+
+        // calculate the expected values
+        float expectedPAndC =  ((float) rowOneMarginalTotal * colOneMarginalTotal) / grandTotal;
+        float expectedPAndNotC = ((float) rowOneMarginalTotal * colTwoMarginalTotal) / grandTotal;
+        float expectedNotPAndC = ((float) rowTwoMarginalTotal * colOneMarginalTotal) / grandTotal;
+        float expectedNotPAndNotC = ((float) rowTwoMarginalTotal * colTwoMarginalTotal) / grandTotal;
+
+        // calculate Chi Squared
+        var firstElement = Math.pow((pAndC - expectedPAndC), 2) / expectedPAndC;
+        var secondElement = Math.pow((notPAndC - expectedNotPAndC), 2) / expectedNotPAndC;
+        var thirdElement = Math.pow((pAndNotC - expectedPAndNotC), 2) / expectedPAndNotC;
+        var fourthElement = Math.pow((notPAndNotC - expectedNotPAndNotC), 2) / expectedNotPAndNotC;
+
+        return (float) (firstElement + secondElement + thirdElement + fourthElement);
     }
 }

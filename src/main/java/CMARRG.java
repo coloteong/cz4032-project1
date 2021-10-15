@@ -114,55 +114,98 @@ public class CMARRG {
 
         // if they are the same size, there is nothing to prune
 
-            for (Rule rule : ruleArray) {
+        for (Rule rule : ruleArray) {
+            for (Transaction transaction : tempTransactions) {
+                // if (rule.getAntecedent() == transaction.getTransactionItems()) {
+                boolean match = true;
+                for (int ruleItem : rule.getAntecedent()) {
+                    if (!ArrayUtils.contains(transaction.getTransactionItems(), ruleItem)) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) {
+                    if (rule.getConsequent() == transaction.getTransactionClass()) {
+                        if (!rulesCorrectlyClassify.contains(rule)) {
+                            rulesCorrectlyClassify.add(rule);
+                        }
+
+                        if (coverCounts.containsKey(transaction.getTransactionID())) {
+                            coverCounts.put(transaction.getTransactionID(), coverCounts.get(transaction.getTransactionID()));
+                        } else {
+                            coverCounts.put(transaction.getTransactionClass(), 1);
+                        }
+                    }
+                }
+            }
+        }
+        // // data object if covercount is higher than threshold
+        // for (int i = 0; i < coverCounts.size(); i++) {
+        //     if (coverCounts.get(i) >= minThreshold) {
+        //         tempTransactions.remove(i);
+        //         coverCounts.remove(i);
+        //         i--;
+        //     }
+        // }
+
+        for (java.util.Map.Entry<Integer, Integer> entry : coverCounts.entrySet()) {
+            if (entry.getValue() >= minThreshold) {
+                coverCounts.remove(entry.getKey());
                 for (Transaction transaction : tempTransactions) {
-                    // if (rule.getAntecedent() == transaction.getTransactionItems()) {
-                    boolean match = true;
-                    for (int ruleItem : rule.getAntecedent()) {
-                        if (!ArrayUtils.contains(transaction.getTransactionItems(), ruleItem)) {
-                            match = false;
-                            break;
-                        }
-                    }
-                    if (match) {
-                        if (rule.getConsequent() == transaction.getTransactionClass()) {
-                            if (!rulesCorrectlyClassify.contains(rule)) {
-                                rulesCorrectlyClassify.add(rule);
-                            }
-
-                            if (coverCounts.containsKey(transaction.getTransactionID())) {
-                                coverCounts.put(transaction.getTransactionID(), coverCounts.get(transaction.getTransactionID()));
-                            } else {
-                                coverCounts.put(transaction.getTransactionClass(), 1);
-                            }
-                        }
+                    if (transaction.getTransactionID() == entry.getKey()) {
+                        tempTransactions.remove(transaction);
+                        break;
                     }
                 }
             }
-            // // data object if covercount is higher than threshold
-            // for (int i = 0; i < coverCounts.size(); i++) {
-            //     if (coverCounts.get(i) >= minThreshold) {
-            //         tempTransactions.remove(i);
-            //         coverCounts.remove(i);
-            //         i--;
-            //     }
-            // }
-
-            for (java.util.Map.Entry<Integer, Integer> entry : coverCounts.entrySet()) {
-                if (entry.getValue() >= minThreshold) {
-                    coverCounts.remove(entry.getKey());
-                    for (Transaction transaction : tempTransactions) {
-                        if (transaction.getTransactionID() == entry.getKey()) {
-                            tempTransactions.remove(transaction);
-                            break;
+        }
+        ArrayList<Rule> finalRulesCorrectlyClassify = new ArrayList<>();    
+        
+        for (Rule rule : rulesCorrectlyClassify) {
+            Map<Integer, Float> ruleIndexMap = new HashMap<>();
+                var ruleError = (rule.getCondSupportCount() - (float) rule.getRuleSupportCount()) / rule.getCondSupportCount();
+                System.out.printf("Current rule ID: %d, Current rule error: %f \n", rule.getRuleID(), ruleError);
+                var ruleAntecedent = rule.getAntecedent();
+                for (int i = 0; i < ruleAntecedent.length; i++) {
+                    //LinkedList<Integer> antecedentList = (LinkedList<Integer>) Ints.asList(ruleAntecedent);
+                    ArrayList<Integer> antecedentList = new ArrayList<>();
+                    for (int j = 0; j < ruleAntecedent.length; j++) {
+                        antecedentList.add(ruleAntecedent[j]);
+                    }
+                    antecedentList.remove(i);
+                    var smallerAntecedent = antecedentList.stream().mapToInt(Integer::intValue).toArray();
+    
+                    var smallerAntecedentCorrect = 0;
+                    var smallerAntecedentSize = 0;
+                    for (Transaction transaction : transactionList) {
+                        var match = true;
+                        for (int ruleItem : smallerAntecedent) {
+                            if (!ArrayUtils.contains(transaction.getTransactionItems(), ruleItem)) {
+                                match = false;
+                                break;
+                            }
+                        }
+                        
+                        if (match) {
+                            smallerAntecedentSize++;
+                            if (rule.getConsequent() == transaction.getTransactionClass()) {
+                                smallerAntecedentCorrect++;
+                            }
                         }
                     }
+                    System.out.printf("smaller antecedent correct: %d, smaller antecedent size: %d", smallerAntecedentCorrect, smallerAntecedentSize);
+                    System.out.printf("rule error: %f\n", ruleError);
+                    ruleIndexMap.put(i, (1 - (smallerAntecedentCorrect / (float) smallerAntecedentSize)));
+                }
+                
+                float minErrorRate = Collections.min(ruleIndexMap.values());
+                if (minErrorRate > ruleError ) {
+                    System.out.printf("Added rule: %d", rule.getRuleID());
+                    finalRulesCorrectlyClassify.add(rule);
                 }
             }
-
-
-
-        return rulesCorrectlyClassify;
+    
+        return finalRulesCorrectlyClassify;
     }
 
     private ArrayList<Rule> createInitialRuleItems() {

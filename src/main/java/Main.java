@@ -13,13 +13,31 @@ public class Main {
 
 
         Scanner sc = new Scanner(System.in);
-        System.out.println("CMAR or CBA? (0 or 1)");
+        System.out.println("CMAR or CBA or even better? (0, 1, or 2)");
         var choice = sc.nextInt();
 
         Reader csvReader = new Reader();
         Transaction[] transactionList = csvReader.startReader();
         trainTestSplit(transactionList);
-        if (choice == 1) {
+
+        if (choice == 2) {
+            ImprovedRG ruleGenerator = new ImprovedRG(transactionList);
+            var ruleArray = ruleGenerator.getRuleItems();
+            for (Rule rule : ruleArray) {
+                System.out.printf("Rule ID:%d, Rule Class:%d, Rule Antecedent:", rule.getRuleID(), rule.getConsequent());
+                for (int item : rule.getAntecedent()) {
+                    System.out.printf("%d, ", item);
+                }
+                System.out.println("");
+            }
+            Classifier classifier = new Classifier(ruleArray, transactionList);
+            classifier.start();
+            classifier.findCRuleAndWRule(); 
+            classifier.goThroughDataAgain();
+            var classifierRules = classifier.chooseFinalRules();
+            goThroughTestWithCBA(classifierRules);
+            
+        } else if (choice == 1) {
             RG ruleGenerator = new RG(transactionList);
             var ruleArray = ruleGenerator.getRuleItems();
             for (Rule rule : ruleArray) {

@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+
 import java.util.Set;
 import java.util.*;
 
@@ -20,7 +20,7 @@ public class CMARRG {
     public Transaction[] transactionList;
 
     // implementing the multiple minimum class support
-    private double minSup = 0.04;
+    private double minSup = 0.01;
     private double minConf = 0.50;
     private int minThreshold = 4;
     // stores all the rules
@@ -161,55 +161,52 @@ public class CMARRG {
                 }
             }
         }
-        // return rulesCorrectlyClassify;
-        ArrayList<Rule> finalRulesCorrectlyClassify = new ArrayList<>();    
+        return rulesCorrectlyClassify;
+        // ArrayList<Rule> finalRulesCorrectlyClassify = new ArrayList<>();    
         
-        // do the CBA Pruning here so that we obtain a better pruning;
-        for (Rule rule : rulesCorrectlyClassify) {
-            Map<Integer, Float> ruleIndexMap = new HashMap<>();
-                var ruleError = (rule.getCondSupportCount() - (float) rule.getRuleSupportCount()) / rule.getCondSupportCount();
-                System.out.printf("Current rule ID: %d, Current rule error: %f \n", rule.getRuleID(), ruleError);
-                var ruleAntecedent = rule.getAntecedent();
-                for (int i = 0; i < ruleAntecedent.length; i++) {
-                    //LinkedList<Integer> antecedentList = (LinkedList<Integer>) Ints.asList(ruleAntecedent);
-                    ArrayList<Integer> antecedentList = new ArrayList<>();
-                    for (int j = 0; j < ruleAntecedent.length; j++) {
-                        antecedentList.add(ruleAntecedent[j]);
-                    }
-                    antecedentList.remove(i);
-                    var smallerAntecedent = antecedentList.stream().mapToInt(Integer::intValue).toArray();
+        // // do the CBA Pruning here so that we obtain a better pruning;
+        // for (Rule rule : rulesCorrectlyClassify) {
+        //     Map<Integer, Float> ruleIndexMap = new HashMap<>();
+        //         var ruleError = (rule.getCondSupportCount() - (float) rule.getRuleSupportCount()) / rule.getCondSupportCount();
+        //         System.out.printf("Current rule ID: %d, Current rule error: %f \n", rule.getRuleID(), ruleError);
+        //         var ruleAntecedent = rule.getAntecedent();
+        //         for (int i = 0; i < ruleAntecedent.length; i++) {
+        //             //LinkedList<Integer> antecedentList = (LinkedList<Integer>) Ints.asList(ruleAntecedent);
+        //             ArrayList<Integer> antecedentList = new ArrayList<>();
+        //             for (int j = 0; j < ruleAntecedent.length; j++) {
+        //                 antecedentList.add(ruleAntecedent[j]);
+        //             }
+        //             antecedentList.remove(i);
+        //             var smallerAntecedent = antecedentList.stream().mapToInt(Integer::intValue).toArray();
     
-                    var smallerAntecedentCorrect = 0;
-                    var smallerAntecedentSize = 0;
-                    for (Transaction transaction : transactionList) {
-                        var match = true;
-                        for (int ruleItem : smallerAntecedent) {
-                            if (!ArrayUtils.contains(transaction.getTransactionItems(), ruleItem)) {
-                                match = false;
-                                break;
-                            }
-                        }
+        //             var smallerAntecedentCorrect = 0;
+        //             var smallerAntecedentSize = 0;
+        //             for (Transaction transaction : transactionList) {
+        //                 var match = true;
+        //                 for (int ruleItem : smallerAntecedent) {
+        //                     if (!ArrayUtils.contains(transaction.getTransactionItems(), ruleItem)) {
+        //                         match = false;
+        //                         break;
+        //                     }
+        //                 }
                         
-                        if (match) {
-                            smallerAntecedentSize++;
-                            if (rule.getConsequent() == transaction.getTransactionClass()) {
-                                smallerAntecedentCorrect++;
-                            }
-                        }
-                    }
-                    System.out.printf("smaller antecedent correct: %d, smaller antecedent size: %d", smallerAntecedentCorrect, smallerAntecedentSize);
-                    System.out.printf("rule error: %f\n", ruleError);
-                    ruleIndexMap.put(i, (1 - (smallerAntecedentCorrect / (float) smallerAntecedentSize)));
-                }
+        //                 if (match) {
+        //                     smallerAntecedentSize++;
+        //                     if (rule.getConsequent() == transaction.getTransactionClass()) {
+        //                         smallerAntecedentCorrect++;
+        //                     }
+        //                 }
+        //             }
+        //             ruleIndexMap.put(i, (1 - (smallerAntecedentCorrect / (float) smallerAntecedentSize)));
+        //         }
                 
-                float minErrorRate = Collections.min(ruleIndexMap.values());
-                if (minErrorRate > ruleError ) {
-                    System.out.printf("Added rule: %d", rule.getRuleID());
-                    finalRulesCorrectlyClassify.add(rule);
-                }
-            }
+        //         float minErrorRate = Collections.min(ruleIndexMap.values());
+        //         if (minErrorRate > ruleError ) {
+        //             finalRulesCorrectlyClassify.add(rule);
+        //         }
+        //     }
     
-        return finalRulesCorrectlyClassify;
+        // return finalRulesCorrectlyClassify;
     }
 
     private ArrayList<Rule> createInitialRuleItems() {

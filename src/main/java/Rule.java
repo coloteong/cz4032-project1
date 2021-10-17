@@ -8,8 +8,8 @@ public class Rule implements Comparable<Rule>{
     private int ruleID;
     private int[] antecedent;
     private int consequent;
-    private int ruleSupportCount;
-    private int condSupportCount;
+    private int ruleSupportCount = 0;
+    private int condSupportCount = 0 ;
     // needed in CBA-CB M2
     private HashMap<Integer, Integer> classCasesCovered = new HashMap<>();
     private boolean coveredCasesCorrectly;
@@ -63,6 +63,7 @@ public class Rule implements Comparable<Rule>{
     
     public double getSupport() {
         var numTransactions = Math.max(RG.numTransactions, CMARRG.numTransactions);
+        numTransactions = Math.max(numTransactions, ImprovedRG.numTransactions);
         return ((double) ruleSupportCount / numTransactions);
     }
 

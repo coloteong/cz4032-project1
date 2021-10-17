@@ -22,24 +22,24 @@ public class RG {
         List<Rule> currRuleArray;
         // line 1
         currRuleArray = createInitialRuleItems();
-        System.out.printf("Size of ruleArray at 1: ");
-        System.out.println(currRuleArray.size());
+        //System.out.printf("Size of ruleArray at 1: ");
+        //System.out.println(currRuleArray.size());
         // line 2
         currRuleArray = genRules(currRuleArray);
-        System.out.printf("Size of ruleArray at 2: ");
-        System.out.println(currRuleArray.size());
+        //System.out.printf("Size of ruleArray at 2: ");
+        //System.out.println(currRuleArray.size());
         ruleArray.addAll(currRuleArray);
         // skip pruning for large 1 itemset
         while (!currRuleArray.isEmpty()) {
             candidateRules = candidateGen(currRuleArray);
-            System.out.printf("Candidate Rules size: %d\n", candidateRules.size());
-            for (Rule rule : candidateRules) {
-                System.out.printf("Rule ID: %d, Rule Consequent: %d, Rule Antecedent: ", rule.getRuleID(), rule.getConsequent());
-                for (int antecedentItem : rule.getAntecedent()) {
+            //System.out.printf("Candidate Rules size: %d\n", candidateRules.size());
+            /*for (Rule rule : candidateRules) {
+                //System.out.printf("Rule ID: %d, Rule Consequent: %d, Rule Antecedent: ", rule.getRuleID(), rule.getConsequent());
+                 for (int antecedentItem : rule.getAntecedent()) {
                     System.out.printf("%d", antecedentItem);
                 }
                 System.out.println("");
-            }
+            } */
             currRuleArray = new ArrayList<>();
             for (Transaction transaction : transactionList) {
                 var cD = ruleSubset(candidateRules, transaction);
@@ -52,13 +52,13 @@ public class RG {
             }
 
             for (Rule rule : candidateRules) {
-                System.out.printf("Rule class: %d, Rule Support: %f, Rule antecedent:", rule.getConsequent(), rule.getSupport());
+                /* System.out.printf("Rule class: %d, Rule Support: %f, Rule antecedent:", rule.getConsequent(), rule.getSupport());
                 for (int antecedentItem : rule.getAntecedent()) {
                     System.out.printf("%d, ", antecedentItem);
                 }
-                System.out.println("");
+                System.out.println(""); */
                 if (rule.getSupport() >= minSup) {
-                    System.out.println("We are here");
+                    //System.out.println("We are here");
                     currRuleArray.add(rule);
                 }
             }
@@ -81,7 +81,7 @@ public class RG {
         for (Transaction transaction : transactionList) {
             possibleClasses.add(transaction.getTransactionClass());
             for (int item : transaction.getTransactionItems()) {
-                System.out.printf("Stupid Error: %d\n", item);
+                //System.out.printf("Stupid Error: %d\n", item);
                 itemSet.add(item);
             }
         }
@@ -106,13 +106,13 @@ public class RG {
             int max = Collections.max(classMap.keySet());
             Rule rule = new Rule(ruleAntecedent, classMap.get(max), numCond, max);
 
-            System.out.printf("Antecedent:");
+           /*  System.out.printf("Antecedent:");
             System.out.println(rule.getAntecedent()[0]);
             System.out.printf("Consequent:");
             System.out.println(rule.getConsequent());
             System.out.printf("Support:");
             System.out.println(rule.getSupport());
-
+ */
             if (rule.getSupport() >= minSup) {
                 possibleRules.add(rule);
             }
@@ -136,7 +136,7 @@ public class RG {
             }
         }
 
-        System.out.printf("Rule Array List Size: %d \n", ruleArrayList.size());
+        //System.out.printf("Rule Array List Size: %d \n", ruleArrayList.size());
         return ruleArrayList;
     }
 
@@ -154,7 +154,7 @@ public class RG {
             var ruleAntecedents = rule.getAntecedent();
 
 
-            System.out.printf("Rule 1 antecedent: %d\n", rule.getAntecedent()[0]);
+            //System.out.printf("Rule 1 antecedent: %d\n", rule.getAntecedent()[0]);
             for (int j = 0; j < i; j++) {
                 
                 int[] newRuleAntecedents = new int[ruleAntecedents.length + 1];
@@ -183,7 +183,7 @@ public class RG {
                         if (nDiff == 1) {
                             for (int k = 0; k < rule2Antecedents.length; k++) {
                                 if (!ArrayUtils.contains(newRuleAntecedents, rule2Antecedents[k])) {
-                                    System.out.println("Here we are");
+                                    //System.out.println("Here we are");
                                     newRuleAntecedents[newRuleAntecedents.length - 1] = rule2Antecedents[k];
                                 if (!ArrayUtils.contains(newRuleAntecedents, 0)) {
                                         Arrays.sort(newRuleAntecedents);
@@ -203,8 +203,8 @@ public class RG {
                                             // System.out.printf("\n");
                                             generatedRuleAntecedents.add(generatedAntecedent);
                                             candidateRules.add(biggerRule);
-                                            System.out.printf("Generated rule number: %d", count++);
-                                            System.out.printf("\n");
+                                            //System.out.printf("Generated rule number: %d", count++);
+                                            //System.out.printf("\n");
                                             count++;
                                     }
                                 }
@@ -222,7 +222,7 @@ public class RG {
     private ArrayList<Rule> genRules(List<Rule> ruleArray) {
         List<Rule> currRuleArray = new ArrayList<>();
         for (Rule rule : ruleArray) {
-            System.out.printf("Antecedent: %d, Consequent: %d, Confidence: %f \n", rule.getAntecedent()[0], rule.getConsequent(), rule.getConfidence());
+            //System.out.printf("Antecedent: %d, Consequent: %d, Confidence: %f \n", rule.getAntecedent()[0], rule.getConsequent(), rule.getConfidence());
             if (rule.getConfidence() > minConf) {
                 currRuleArray.add(rule);
             }
@@ -236,7 +236,7 @@ public class RG {
         for (Rule rule : ruleArray) {
         Map<Integer, Float> ruleIndexMap = new HashMap<>();
             var ruleError = (rule.getCondSupportCount() - (float) rule.getRuleSupportCount()) / rule.getCondSupportCount();
-            System.out.printf("Current rule ID: %d, Current rule error: %f \n", rule.getRuleID(), ruleError);
+            //System.out.printf("Current rule ID: %d, Current rule error: %f \n", rule.getRuleID(), ruleError);
             var ruleAntecedent = rule.getAntecedent();
             for (int i = 0; i < ruleAntecedent.length; i++) {
                 //LinkedList<Integer> antecedentList = (LinkedList<Integer>) Ints.asList(ruleAntecedent);
@@ -265,14 +265,14 @@ public class RG {
                         }
                     }
                 }
-                System.out.printf("smaller antecedent correct: %d, smaller antecedent size: %d", smallerAntecedentCorrect, smallerAntecedentSize);
-                System.out.printf("rule error: %f\n", ruleError);
+                //System.out.printf("smaller antecedent correct: %d, smaller antecedent size: %d", smallerAntecedentCorrect, smallerAntecedentSize);
+                //System.out.printf("rule error: %f\n", ruleError);
                 ruleIndexMap.put(i, (1 - (smallerAntecedentCorrect / (float) smallerAntecedentSize)));
             }
             
             float minErrorRate = Collections.min(ruleIndexMap.values());
             if (minErrorRate > ruleError ) {
-                System.out.printf("Added rule: %d", rule.getRuleID());
+                //System.out.printf("Added rule: %d", rule.getRuleID());
                 prunedRuleArray.add(rule);
             }
         }

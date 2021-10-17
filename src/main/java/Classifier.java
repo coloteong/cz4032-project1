@@ -24,15 +24,15 @@ public class Classifier{
 
     public void start() {
         Collections.sort(sortedRuleArray);
-        for (Rule rule : sortedRuleArray) {
+        /* for (Rule rule : sortedRuleArray) {
             System.out.printf("Rule ID:%d, Rule Confidence:%f, Rule Support:%f\n", rule.getRuleID(), rule.getConfidence(), rule.getSupport());
-        }
+        } */
     }
     // CBA-CB M2 Stage 1
     public void findCRuleAndWRule() {
 
         for (Transaction transaction : transactionList) {
-            System.out.printf("Transaction ID: %d, Transaction Class: %d\n", transaction.getTransactionID(), transaction.getTransactionClass());
+            //System.out.printf("Transaction ID: %d, Transaction Class: %d\n", transaction.getTransactionID(), transaction.getTransactionClass());
             var transactionItems = transaction.getTransactionItems();
             for (Rule rule : sortedRuleArray) {
                 var ruleLHS = rule.getAntecedent();
@@ -48,12 +48,12 @@ public class Classifier{
                             transaction.setCRule(rule);
                             setOfCRules.add(rule);
                             rule.addClassCasesCovered(transaction.getTransactionClass());
-                            System.out.printf("Transaction CRule ID: %d, Transaction CRule Class: %d\n", transaction.getCRule().getRuleID(), rule.getConsequent());
+                            //System.out.printf("Transaction CRule ID: %d, Transaction CRule Class: %d\n", transaction.getCRule().getRuleID(), rule.getConsequent());
                         }
                     } else {
                         if(transaction.getWRule() == null) {
                             transaction.setWRule(rule);
-                            System.out.printf("Transaction wRule ID: %d, Transaction WRule Class: %d\n", transaction.getWRule().getRuleID(), rule.getConsequent());
+                            //System.out.printf("Transaction wRule ID: %d, Transaction WRule Class: %d\n", transaction.getWRule().getRuleID(), rule.getConsequent());
                         }
                     }
                 }
@@ -80,7 +80,7 @@ public class Classifier{
                 // case 1 comes here
                 // case 3 comes here
                 // need to mark CRule
-                    System.out.printf("Transaction %d is here\n", transaction.getTransactionID());
+                    //System.out.printf("Transaction %d is here\n", transaction.getTransactionID());
                     if(!setOfCRulesWithHigherPrecedence.contains(transaction.getCRule())) {
                         setOfCRulesWithHigherPrecedence.add(transaction.getCRule());
                         transaction.getCRule().markRule();
@@ -91,7 +91,7 @@ public class Classifier{
                 // case 2 comes here
                 // if cRule > wRule, need to keep a data structure containing:
                 // transactionID, transactionClass, cRule, and wRule
-                System.out.printf("Transaction %d cannot be decided\n", transaction.getTransactionID());
+                //System.out.printf("Transaction %d cannot be decided\n", transaction.getTransactionID());
                 SpecialTransaction specialTransaction = new SpecialTransaction(transaction.getTransactionID(), transaction.getTransactionClass(), transaction.getCRule(), transaction.getWRule());
                 setOfSpecialTransactions.add(specialTransaction);
                 // we need to check setOfSpecialTransactions for cases in which CRule is null
@@ -108,7 +108,7 @@ public class Classifier{
 
         for (SpecialTransaction trans : setOfSpecialTransactions) {
 
-            System.out.printf("Transaction ID: %d, Transaction WRule ID: %d\n", trans.getTransactionID(), trans.getWRule().getRuleID());
+            //System.out.printf("Transaction ID: %d, Transaction WRule ID: %d\n", trans.getTransactionID(), trans.getWRule().getRuleID());
                 if (trans.getWRule().getCoveredCasesCorrectly()) {
 
                     if (trans.getCRule() != null) {
@@ -120,11 +120,11 @@ public class Classifier{
                     var wSet = allCoverRules(trans);
                     
                     for (Rule rule : wSet) {
-                        System.out.printf("Rule ID: %d\n", rule.getRuleID());
+                        //System.out.printf("Rule ID: %d\n", rule.getRuleID());
                         if (trans.getCRule() != null) {
                             SpecialRule replaceRule = new SpecialRule(trans.getTransactionID(), trans.getTransactionClass(), trans.getCRule());
                             rule.addToReplace(replaceRule);
-                            System.out.printf("Rule to Replace: %d\n", replaceRule.getCRule().getRuleID());
+                            //System.out.printf("Rule to Replace: %d\n", replaceRule.getCRule().getRuleID());
                         }
                         rule.addClassCasesCovered(trans.getTransactionClass());
                     }
@@ -178,23 +178,23 @@ public class Classifier{
         int totalErrors = 0;
         // line 3
         Collections.sort(setOfCRulesWithHigherPrecedence);
-        System.out.printf("Set of C Rules with higher precedence: %d\n", setOfCRulesWithHigherPrecedence.size());
+        //System.out.printf("Set of C Rules with higher precedence: %d\n", setOfCRulesWithHigherPrecedence.size());
         // line 4
         for (Rule rule : setOfCRulesWithHigherPrecedence) {
             var ruleClass = rule.getConsequent();
-            System.out.printf("Rule ID: %d, Rule Consequent: %d\n", rule.getRuleID(), ruleClass);
+            //System.out.printf("Rule ID: %d, Rule Consequent: %d\n", rule.getRuleID(), ruleClass);
             // line 5
             if (rule.getClassCasesCovered().get(ruleClass) != 0) {
                 // line 6
-                System.out.printf("Number of rules to replace: %d\n", rule.getReplace().size());
+                //System.out.printf("Number of rules to replace: %d\n", rule.getReplace().size());
                 for (SpecialRule replaceRule : rule.getReplace()) {
                     // if the transactionID has been covered
-                    System.out.printf("Rule to be replaced: %d\n", replaceRule.getTransactionID());
+                    //System.out.printf("Rule to be replaced: %d\n", replaceRule.getTransactionID());
                     if (coveredTransaction.contains(replaceRule.getTransactionID())) {
                         rule.removeClassCasesCovered(replaceRule.getTransactionClass());
                     } else {
                         replaceRule.getCRule().removeClassCasesCovered(replaceRule.getTransactionClass());
-                        System.out.printf("replaceRule.getCRule: %d\n", replaceRule.getCRule().getRuleID());
+                        //System.out.printf("replaceRule.getCRule: %d\n", replaceRule.getCRule().getRuleID());
                         for (Rule rule1 : setOfCRulesWithHigherPrecedence) {
                             if (replaceRule.getCRule().getRuleID() == rule1.getRuleID()) {
                                 rule.removeClassCasesCovered(replaceRule.getTransactionClass());
@@ -206,21 +206,21 @@ public class Classifier{
                 ruleErrors = rule.errorsOfRule();
                 ruleErrorsSoFar += ruleErrors;
                 // ruleErrors += errorsOfRule(classDistr, rule);
-                System.out.printf("errors of rule: %d\n", ruleErrors);
-                System.out.printf("errors due to rules so far: %d\n", ruleErrorsSoFar);
-                System.out.printf("Rule ID:%d, Rule Consequent:%d, Rule Confidence: %f, Rule Antecedents:", rule.getRuleID(), rule.getConsequent(), rule.getConfidence());
-                for (int items : rule.getAntecedent()) {
+                //System.out.printf("errors of rule: %d\n", ruleErrors);
+                //System.out.printf("errors due to rules so far: %d\n", ruleErrorsSoFar);
+                //System.out.printf("Rule ID:%d, Rule Consequent:%d, Rule Confidence: %f, Rule Antecedents:", rule.getRuleID(), rule.getConsequent(), rule.getConfidence());
+                /* for (int items : rule.getAntecedent()) {
                     System.out.printf("%d ", items);
                 }
-                System.out.printf("\n");
+                System.out.printf("\n"); */
                 // there is a problem with classDistr
                 classDistr = updateClassDistr(rule, classDistr);
                 var defaultClass = selectDefault(classDistr);
-                System.out.printf("default class is %d\n", defaultClass);
+                //System.out.printf("default class is %d\n", defaultClass);
                 var defaultErrors = defErr(defaultClass, classDistr);
-                System.out.printf("default error is %d\n", defaultErrors);
+                //System.out.printf("default error is %d\n", defaultErrors);
                 totalErrors = ruleErrorsSoFar + defaultErrors;
-                System.out.printf("total error is %d\n", totalErrors);
+                //System.out.printf("total error is %d\n", totalErrors);
                 // TODO: everything from 267 onwards
                 ClassificationRule classificationRule = new ClassificationRule(rule, defaultClass, totalErrors);
                 classifierRules.add(classificationRule);
@@ -237,7 +237,7 @@ public class Classifier{
                 min = i;
             }
         }
-        System.out.printf("Min Total Error:%d\n", minError);
+        //System.out.printf("Min Total Error:%d\n", minError);
 
         // line 19
         finalDefaultClass = classifierRules.get(min).getDefaultClass();
@@ -269,18 +269,18 @@ public class Classifier{
     private HashMap<Integer, Integer> updateClassDistr(Rule rule, HashMap<Integer, Integer> classDistr) {
         var newClassDistr = new HashMap<Integer, Integer>();
         var classCasesCovered = rule.getClassCasesCovered();
-        System.out.printf("Size of classCasesCovered: %d\n", classCasesCovered.size());
+        //System.out.printf("Size of classCasesCovered: %d\n", classCasesCovered.size());
         for (Entry<Integer, Integer> entry: classDistr.entrySet()) {
             var transactionClass = entry.getKey();
             var count = entry.getValue();
-            System.out.printf("Old Transaction Class:%d, Old Count:%d\n", transactionClass, count);
+            //System.out.printf("Old Transaction Class:%d, Old Count:%d\n", transactionClass, count);
             if (rule.getClassCasesCovered().get(transactionClass) != null) {
                 newClassDistr.put(transactionClass, count - rule.getClassCasesCovered().get(transactionClass));
             }
             else {
                 newClassDistr.put(transactionClass, count);
             }
-            System.out.printf("New Transaction Class:%d, New Count:%d\n", transactionClass, newClassDistr.get(transactionClass));
+            //System.out.printf("New Transaction Class:%d, New Count:%d\n", transactionClass, newClassDistr.get(transactionClass));
             
         }
         // for (Entry<Integer, Integer> entry: classCasesCovered.entrySet()) {
@@ -311,7 +311,7 @@ public class Classifier{
         int error = 0;
         for (Map.Entry<Integer, Integer> entry : classDistr.entrySet()) {
             if (entry.getKey() != defaultClass) {
-                System.out.printf("Class %d, num:%d\n", entry.getKey(), entry.getValue());
+                //System.out.printf("Class %d, num:%d\n", entry.getKey(), entry.getValue());
                 error += entry.getValue();
             }
         }

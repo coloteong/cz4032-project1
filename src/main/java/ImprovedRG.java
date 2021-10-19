@@ -99,7 +99,7 @@ public class ImprovedRG {
         for (Transaction transaction : transactionList) {
             possibleClasses.add(transaction.getTransactionClass());
             for (int item : transaction.getTransactionItems()) {
-                System.out.printf("Stupid Error: %d\n", item);
+                // System.out.printf("Stupid Error: %d\n", item);
                 itemSet.add(item);
             }
         }
@@ -203,7 +203,7 @@ public class ImprovedRG {
                         if (nDiff == 1) {
                             for (int k = 0; k < rule2Antecedents.length; k++) {
                                 if (!ArrayUtils.contains(newRuleAntecedents, rule2Antecedents[k])) {
-                                    System.out.println("Here we are");
+                                    // System.out.println("Here we are");
                                     newRuleAntecedents[newRuleAntecedents.length - 1] = rule2Antecedents[k];
                                 if (!ArrayUtils.contains(newRuleAntecedents, 0)) {
                                         Arrays.sort(newRuleAntecedents);

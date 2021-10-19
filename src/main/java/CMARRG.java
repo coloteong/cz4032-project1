@@ -141,14 +141,7 @@ public class CMARRG {
                 }
             }
         }
-        // // data object if covercount is higher than threshold
-        // for (int i = 0; i < coverCounts.size(); i++) {
-        //     if (coverCounts.get(i) >= minThreshold) {
-        //         tempTransactions.remove(i);
-        //         coverCounts.remove(i);
-        //         i--;
-        //     }
-        // }
+   
 
         for (java.util.Map.Entry<Integer, Integer> entry : coverCounts.entrySet()) {
             if (entry.getValue() >= minThreshold) {
@@ -162,51 +155,6 @@ public class CMARRG {
             }
         }
         return rulesCorrectlyClassify;
-        // ArrayList<Rule> finalRulesCorrectlyClassify = new ArrayList<>();    
-        
-        // // do the CBA Pruning here so that we obtain a better pruning;
-        // for (Rule rule : rulesCorrectlyClassify) {
-        //     Map<Integer, Float> ruleIndexMap = new HashMap<>();
-        //         var ruleError = (rule.getCondSupportCount() - (float) rule.getRuleSupportCount()) / rule.getCondSupportCount();
-        //         System.out.printf("Current rule ID: %d, Current rule error: %f \n", rule.getRuleID(), ruleError);
-        //         var ruleAntecedent = rule.getAntecedent();
-        //         for (int i = 0; i < ruleAntecedent.length; i++) {
-        //             //LinkedList<Integer> antecedentList = (LinkedList<Integer>) Ints.asList(ruleAntecedent);
-        //             ArrayList<Integer> antecedentList = new ArrayList<>();
-        //             for (int j = 0; j < ruleAntecedent.length; j++) {
-        //                 antecedentList.add(ruleAntecedent[j]);
-        //             }
-        //             antecedentList.remove(i);
-        //             var smallerAntecedent = antecedentList.stream().mapToInt(Integer::intValue).toArray();
-    
-        //             var smallerAntecedentCorrect = 0;
-        //             var smallerAntecedentSize = 0;
-        //             for (Transaction transaction : transactionList) {
-        //                 var match = true;
-        //                 for (int ruleItem : smallerAntecedent) {
-        //                     if (!ArrayUtils.contains(transaction.getTransactionItems(), ruleItem)) {
-        //                         match = false;
-        //                         break;
-        //                     }
-        //                 }
-                        
-        //                 if (match) {
-        //                     smallerAntecedentSize++;
-        //                     if (rule.getConsequent() == transaction.getTransactionClass()) {
-        //                         smallerAntecedentCorrect++;
-        //                     }
-        //                 }
-        //             }
-        //             ruleIndexMap.put(i, (1 - (smallerAntecedentCorrect / (float) smallerAntecedentSize)));
-        //         }
-                
-        //         float minErrorRate = Collections.min(ruleIndexMap.values());
-        //         if (minErrorRate > ruleError ) {
-        //             finalRulesCorrectlyClassify.add(rule);
-        //         }
-        //     }
-    
-        // return finalRulesCorrectlyClassify;
     }
 
     private ArrayList<Rule> createInitialRuleItems() {
@@ -330,17 +278,6 @@ public class CMARRG {
                                         List<Integer> generatedAntecedent = Ints.asList(newRuleAntecedents);
                                         if(!generatedRuleAntecedents.contains(generatedAntecedent)) {
                                             Rule biggerRule = new Rule(newRuleAntecedents, rule2.getConsequent());
-                                            // System.out.printf("Antecedants of biggerRule: ");
-                                            // for (int item1 : biggerRule.getAntecedent()) {
-                                            //     System.out.printf("%d, ", item1);
-                                            // }
-                                            // System.out.printf("\n");
-                                            // System.out.printf("Class of biggerRule: %d\n", biggerRule.getConsequent());
-                                            // System.out.println("Antecedents of the New Rule");
-                                            // for (int item : newRuleAntecedents) {
-                                            //     System.out.printf("%d, ", item);
-                                            // }
-                                            // System.out.printf("\n");
                                             generatedRuleAntecedents.add(generatedAntecedent);
                                             candidateRules.add(biggerRule);
                                             System.out.printf("Generated rule number: %d", count++);
@@ -375,11 +312,6 @@ public class CMARRG {
             // first CMAR Pruning is done here
             Collections.sort(bigRuleArray);
             for (Rule rule2 : bigRuleArray) {
-            // System.out.printf("2 - ID: %d, Consequent: %d, Support: %f, Confidence: %f, Antecedent: ", rule2.getRuleID(), rule2.getConsequent(), rule2.getSupport(), rule2.getConfidence());
-            // for (int ruleItem : rule2.getAntecedent()) {
-            //     System.out.printf("%d, ", ruleItem);
-            // }
-            // System.out.println("");
                 var rule2LHS = rule2.getAntecedent();
                 boolean match = true;
                 for (int ruleItem : rule2LHS) {

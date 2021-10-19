@@ -136,7 +136,6 @@ public class RG {
             }
         }
 
-        //System.out.printf("Rule Array List Size: %d \n", ruleArrayList.size());
         return ruleArrayList;
     }
 
@@ -154,7 +153,6 @@ public class RG {
             var ruleAntecedents = rule.getAntecedent();
 
 
-            //System.out.printf("Rule 1 antecedent: %d\n", rule.getAntecedent()[0]);
             for (int j = 0; j < i; j++) {
                 
                 int[] newRuleAntecedents = new int[ruleAntecedents.length + 1];
@@ -170,14 +168,12 @@ public class RG {
 
                 if (rule.getConsequent() == rule2.getConsequent()) {
                     for (int k = 0; k < rule2Antecedents.length; k++) {
-                        // System.out.printf("rule 2 antecedents : %d \n", rule2Antecedents[k]);
                         if (!ArrayUtils.contains(newRuleAntecedents, rule2Antecedents[k])) {
                             contains = false;
                             nDiff++;
                         }
                     }
 
-                    // System.out.printf("nDiff = %d\n", nDiff);
 
                     if (!contains) {
                         if (nDiff == 1) {
@@ -190,21 +186,8 @@ public class RG {
                                         List<Integer> generatedAntecedent = Ints.asList(newRuleAntecedents);
                                         if(!generatedRuleAntecedents.contains(generatedAntecedent)) {
                                             Rule biggerRule = new Rule(newRuleAntecedents, rule2.getConsequent());
-                                            // System.out.printf("Antecedants of biggerRule: ");
-                                            // for (int item1 : biggerRule.getAntecedent()) {
-                                            //     System.out.printf("%d, ", item1);
-                                            // }
-                                            // System.out.printf("\n");
-                                            // System.out.printf("Class of biggerRule: %d", biggerRule.getConsequent());
-                                            // System.out.println("Antecedents of the New Rule");
-                                            // for (int item : newRuleAntecedents) {
-                                            //     System.out.printf("%d, ", item);
-                                            // }
-                                            // System.out.printf("\n");
                                             generatedRuleAntecedents.add(generatedAntecedent);
                                             candidateRules.add(biggerRule);
-                                            //System.out.printf("Generated rule number: %d", count++);
-                                            //System.out.printf("\n");
                                             count++;
                                     }
                                 }
@@ -222,7 +205,6 @@ public class RG {
     private ArrayList<Rule> genRules(List<Rule> ruleArray) {
         List<Rule> currRuleArray = new ArrayList<>();
         for (Rule rule : ruleArray) {
-            //System.out.printf("Antecedent: %d, Consequent: %d, Confidence: %f \n", rule.getAntecedent()[0], rule.getConsequent(), rule.getConfidence());
             if (rule.getConfidence() > minConf) {
                 currRuleArray.add(rule);
             }
@@ -236,10 +218,8 @@ public class RG {
         for (Rule rule : ruleArray) {
         Map<Integer, Float> ruleIndexMap = new HashMap<>();
             var ruleError = (rule.getCondSupportCount() - (float) rule.getRuleSupportCount()) / rule.getCondSupportCount();
-            //System.out.printf("Current rule ID: %d, Current rule error: %f \n", rule.getRuleID(), ruleError);
             var ruleAntecedent = rule.getAntecedent();
             for (int i = 0; i < ruleAntecedent.length; i++) {
-                //LinkedList<Integer> antecedentList = (LinkedList<Integer>) Ints.asList(ruleAntecedent);
                 ArrayList<Integer> antecedentList = new ArrayList<>();
                 for (int j = 0; j < ruleAntecedent.length; j++) {
                     antecedentList.add(ruleAntecedent[j]);
@@ -265,14 +245,11 @@ public class RG {
                         }
                     }
                 }
-                //System.out.printf("smaller antecedent correct: %d, smaller antecedent size: %d", smallerAntecedentCorrect, smallerAntecedentSize);
-                //System.out.printf("rule error: %f\n", ruleError);
                 ruleIndexMap.put(i, (1 - (smallerAntecedentCorrect / (float) smallerAntecedentSize)));
             }
             
             float minErrorRate = Collections.min(ruleIndexMap.values());
             if (minErrorRate > ruleError ) {
-                //System.out.printf("Added rule: %d", rule.getRuleID());
                 prunedRuleArray.add(rule);
             }
         }

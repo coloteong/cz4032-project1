@@ -7,6 +7,7 @@ import java.util.Scanner;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 
+// Reader class to read in data
 public class Reader {
 
     public String dataDir;
